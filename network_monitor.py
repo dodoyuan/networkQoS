@@ -376,12 +376,12 @@ class NetworkMonitor(app_manager.RyuApp):
         if(type == 'port'):
             print('datapath          port   ''rx-bytes '
                   'tx-bytes port-speed(B/s)'
-                  ' current-capacity(Kbps)  '
+                  ' free-bandwidth(Mbps)  '
                   )
             print('--------------   -------- ''------ '
                   '-------- -------- '
                   '----------   ')
-            format = '%016x %8x %8d %8d %8.1f %16d'
+            format = '%016x %8x %8d %8d %8.1f %8.4f'
             for dpid in bodys.keys():
                 for stat in sorted(bodys[dpid], key=attrgetter('port_no')):
                     if stat.port_no != ofproto_v1_3.OFPP_LOCAL:
