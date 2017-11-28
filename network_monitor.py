@@ -53,8 +53,6 @@ class NetworkMonitor(app_manager.RyuApp):
         self.free_bandwidth = {}
         self.awareness = lookup_service_brick('awareness')
         self.graph = None
-        self.capabilities = None
-        self.best_paths = None
         # Start to green thread to monitor traffic and calculating
         # free bandwidth of links respectively.
         self.monitor_thread = hub.spawn(self._monitor)
@@ -81,18 +79,13 @@ class NetworkMonitor(app_manager.RyuApp):
             Main entry method of monitoring traffic.
         """
         while setting.WEIGHT == 'bw':
-            self.stats['flow'] = {}
             self.stats['port'] = {}
             for dp in self.datapaths.values():
                 self.port_features.setdefault(dp.id, {})
                 self._request_stats(dp)
-                # refresh data.
-                self.capabilities = None
-                self.best_paths = None
+
             hub.sleep(setting.MONITOR_PERIOD)
-            # if self.stats['flow'] or self.stats['port']:
             if self.stats['port']:
-                # self.show_stat('flow')
                 self.show_stat('port')
                 hub.sleep(1)
 
@@ -113,34 +106,28 @@ class NetworkMonitor(app_manager.RyuApp):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 
-        req = parser.OFPPortDescStatsRequest(datapath, 0)
-        datapath.send_msg(req)
-
         req = parser.OFPPortStatsRequest(datapath, 0, ofproto.OFPP_ANY)
         datapath.send_msg(req)
 
-        req = parser.OFPFlowStatsRequest(datapath)
-        datapath.send_msg(req)
-
-    def get_min_bw_of_links(self, graph, path, min_bw):
+    def get_min_bw_of_links(self, path, min_bw):
         """
             Getting bandwidth of path. Actually, the mininum bandwidth
-            of links is the bandwith, because it is the neck bottle of path.
+            of links is the bandwidth, because it is the neck bottle of path.
         """
         _len = len(path)
         if _len > 1:
             minimal_band_width = min_bw
             for i in xrange(_len-1):
                 pre, curr = path[i], path[i+1]
-                if 'bandwidth' in graph[pre][curr]:
-                    bw = graph[pre][curr]['bandwidth']
+                if 'bandwidth' in self.graph[pre][curr]:
+                    bw = self.graph[pre][curr]['bandwidth']
                     minimal_band_width = min(bw, minimal_band_width)
                 else:
                     continue
             return minimal_band_width
         return min_bw
 
-    def get_bw_guaranteed_path(self, graph, paths, require_band):
+    def get_bw_guaranteed_path(self, paths, require_band):
         """
             Get best path by comparing paths.
             return a path with the guaranteed band-with
@@ -150,7 +137,7 @@ class NetworkMonitor(app_manager.RyuApp):
         bw_guaranteed_paths = paths[0]
         for path in paths:
             min_bw = setting.MAX_CAPACITY
-            min_bw = self.get_min_bw_of_links(graph, path, min_bw)
+            min_bw = self.get_min_bw_of_links(path, min_bw)
             if min_bw > max_bw_of_paths:
                 max_bw_of_paths = min_bw
                 if min_bw > require_band:
@@ -187,9 +174,12 @@ class NetworkMonitor(app_manager.RyuApp):
 
     def _save_freebandwidth(self, dpid, port_no, speed):
         # Calculate free bandwidth of port and save it.
-        port_state = self.port_features.get(dpid).get(port_no)
+        # port_state = self.port_features.get(dpid).get(port_no)
+        #
+        port_state = 1  # TODO creat map with port status
         if port_state:
-            capacity = port_state[2]
+            capacity = setting.link_capacity  # TODO create map of each link capacity
+            # bandwidth Mbps
             curr_bw = self._get_free_bw(capacity, speed)
             self.free_bandwidth[dpid].setdefault(port_no, None)
             self.free_bandwidth[dpid][port_no] = curr_bw
@@ -212,7 +202,7 @@ class NetworkMonitor(app_manager.RyuApp):
 
     def _get_free_bw(self, capacity, speed):
         # BW:Mbit/s
-        return max(capacity / 10**3 - speed * 8 / 10**6, 0)
+        return max(capacity - float(speed * 8) / 10**6, 0)
 
     def _get_time(self, sec, nsec):
         return sec + nsec / (10 ** 9)
@@ -290,48 +280,48 @@ class NetworkMonitor(app_manager.RyuApp):
                 self._save_stats(self.port_speed, key, speed, 5)
                 self._save_freebandwidth(dpid, port_no, speed)
 
-    @set_ev_cls(ofp_event.EventOFPPortDescStatsReply, MAIN_DISPATCHER)
-    def port_desc_stats_reply_handler(self, ev):
-        """
-            Save port description info.
-        """
-        msg = ev.msg
-        dpid = msg.datapath.id
-        ofproto = msg.datapath.ofproto
-
-        config_dict = {ofproto.OFPPC_PORT_DOWN: "Down",
-                       ofproto.OFPPC_NO_RECV: "No Recv",
-                       ofproto.OFPPC_NO_FWD: "No Farward",
-                       ofproto.OFPPC_NO_PACKET_IN: "No Packet-in"}
-
-        state_dict = {ofproto.OFPPS_LINK_DOWN: "Down",
-                      ofproto.OFPPS_BLOCKED: "Blocked",
-                      ofproto.OFPPS_LIVE: "Live"}
-
-        ports = []
-        for p in ev.msg.body:
-            ports.append('port_no=%d hw_addr=%s name=%s config=0x%08x '
-                         'state=0x%08x curr=0x%08x advertised=0x%08x '
-                         'supported=0x%08x peer=0x%08x curr_speed=%d '
-                         'max_speed=%d' %
-                         (p.port_no, p.hw_addr,
-                          p.name, p.config,
-                          p.state, p.curr, p.advertised,
-                          p.supported, p.peer, p.curr_speed,
-                          p.max_speed))
-
-            if p.config in config_dict:
-                config = config_dict[p.config]
-            else:
-                config = "up"
-
-            if p.state in state_dict:
-                state = state_dict[p.state]
-            else:
-                state = "up"
-
-            port_feature = (config, state, p.curr_speed)
-            self.port_features[dpid][p.port_no] = port_feature
+    # @set_ev_cls(ofp_event.EventOFPPortDescStatsReply, MAIN_DISPATCHER)
+    # def port_desc_stats_reply_handler(self, ev):
+    #     """
+    #         Save port description info.
+    #     """
+    #     msg = ev.msg
+    #     dpid = msg.datapath.id
+    #     ofproto = msg.datapath.ofproto
+    #
+    #     config_dict = {ofproto.OFPPC_PORT_DOWN: "Down",
+    #                    ofproto.OFPPC_NO_RECV: "No Recv",
+    #                    ofproto.OFPPC_NO_FWD: "No Farward",
+    #                    ofproto.OFPPC_NO_PACKET_IN: "No Packet-in"}
+    #
+    #     state_dict = {ofproto.OFPPS_LINK_DOWN: "Down",
+    #                   ofproto.OFPPS_BLOCKED: "Blocked",
+    #                   ofproto.OFPPS_LIVE: "Live"}
+    #
+    #     ports = []
+    #     for p in ev.msg.body:
+    #         ports.append('port_no=%d hw_addr=%s name=%s config=0x%08x '
+    #                      'state=0x%08x curr=0x%08x advertised=0x%08x '
+    #                      'supported=0x%08x peer=0x%08x curr_speed=%d '
+    #                      'max_speed=%d' %
+    #                      (p.port_no, p.hw_addr,
+    #                       p.name, p.config,
+    #                       p.state, p.curr, p.advertised,
+    #                       p.supported, p.peer, p.curr_speed,
+    #                       p.max_speed))
+    #
+    #         if p.config in config_dict:
+    #             config = config_dict[p.config]
+    #         else:
+    #             config = "up"
+    #
+    #         if p.state in state_dict:
+    #             state = state_dict[p.state]
+    #         else:
+    #             state = "up"
+    #
+    #         port_feature = (config, state, p.curr_speed)
+    #         self.port_features[dpid][p.port_no] = port_feature
 
     @set_ev_cls(ofp_event.EventOFPPortStatus, MAIN_DISPATCHER)
     def _port_status_handler(self, ev):
@@ -349,7 +339,6 @@ class NetworkMonitor(app_manager.RyuApp):
                        ofproto.OFPPR_MODIFY: "modified", }
 
         if reason in reason_dict:
-
             print "switch%d: port %s %s" % (dpid, reason_dict[reason], port_no)
         else:
             print "switch%d: Illeagal port state %s %s" % (port_no, reason)

@@ -227,27 +227,13 @@ class ShortestForwarding(app_manager.RyuApp):
             Get shortest path from network awareness module.
         """
         shortest_paths = self.awareness.shortest_paths
-        graph = self.awareness.graph
+        # graph = self.awareness.graph
 
         if weight == self.WEIGHT_MODEL['hop']:
             return shortest_paths.get(src).get(dst)[0]
         elif weight == self.WEIGHT_MODEL['bw']:
-            # Because all paths will be calculate
-            # when call self.monitor.get_best_path_by_bw
-            # So we just need to call it once in a period,
-            # and then, we can get path directly.
-            # try:
-            #     # if path is existed, return it.
-            #     path = self.monitor.best_paths.get(src).get(dst)
-            #     return path
-            # except:
-            #     # else, calculate it, and return.
-            #     result = self.monitor.get_best_path_by_bw(graph,
-            #                                               shortest_paths, require_band)
-            #     paths = result[1]
-            #     best_path = paths.get(src).get(dst)
             path = shortest_paths[src][dst]
-            bw_guarantee_path, reconf_flag = self.monitor.get_bw_guaranteed_path(graph, path, require_band)
+            bw_guarantee_path, reconf_flag = self.monitor.get_bw_guaranteed_path(path, require_band)
             return bw_guarantee_path, reconf_flag
 
     def get_sw(self, dpid, in_port, src, dst):
