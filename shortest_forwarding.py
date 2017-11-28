@@ -92,11 +92,11 @@ class ShortestForwarding(app_manager.RyuApp):
         datapath = ev.datapath
         if ev.state == MAIN_DISPATCHER:
             if not datapath.id in self.datapaths:
-                self.logger.debug('register datapath: %016x', datapath.id)
+                self.logger.info('register datapath: %016x', datapath.id)
                 self.datapaths[datapath.id] = datapath
         elif ev.state == DEAD_DISPATCHER:
             if datapath.id in self.datapaths:
-                self.logger.debug('unregister datapath: %016x', datapath.id)
+                self.logger.info('unregister datapath: %016x', datapath.id)
                 del self.datapaths[datapath.id]
 
     def add_flow(self, dp, p, match, actions, idle_timeout=0, hard_timeout=0):
@@ -402,5 +402,6 @@ class ShortestForwarding(app_manager.RyuApp):
 
 
     def network_reconfigration(self):
+        print 'not enough bandwith ILP enter'
         return True
 

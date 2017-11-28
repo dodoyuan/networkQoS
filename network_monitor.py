@@ -46,10 +46,9 @@ class NetworkMonitor(app_manager.RyuApp):
         self.datapaths = {}
         self.port_stats = {}
         self.port_speed = {}
-        self.flow_stats = {}
-        self.flow_speed = {}
+        # self.flow_stats = {}
+        # self.flow_speed = {}
         self.stats = {}
-        self.port_features = {}
         self.free_bandwidth = {}
         self.awareness = lookup_service_brick('awareness')
         self.graph = None
@@ -81,7 +80,6 @@ class NetworkMonitor(app_manager.RyuApp):
         while setting.WEIGHT == 'bw':
             self.stats['port'] = {}
             for dp in self.datapaths.values():
-                self.port_features.setdefault(dp.id, {})
                 self._request_stats(dp)
 
             hub.sleep(setting.MONITOR_PERIOD)
@@ -210,40 +208,6 @@ class NetworkMonitor(app_manager.RyuApp):
     def _get_period(self, n_sec, n_nsec, p_sec, p_nsec):
         return self._get_time(n_sec, n_nsec) - self._get_time(p_sec, p_nsec)
 
-    @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
-    def _flow_stats_reply_handler(self, ev):
-        """
-            Save flow stats reply info into self.flow_stats.
-            Calculate flow speed and Save it.
-        """
-        body = ev.msg.body
-        dpid = ev.msg.datapath.id
-        self.stats['flow'][dpid] = body
-        self.flow_stats.setdefault(dpid, {})
-        self.flow_speed.setdefault(dpid, {})
-        for stat in sorted([flow for flow in body if flow.priority == 1],
-                           key=lambda flow: (flow.match.get('in_port'),
-                                             flow.match.get('ipv4_dst'))):
-            key = (stat.match['in_port'],  stat.match.get('ipv4_dst'),
-                   stat.instructions[0].actions[0].port)
-            value = (stat.packet_count, stat.byte_count,
-                     stat.duration_sec, stat.duration_nsec)
-            self._save_stats(self.flow_stats[dpid], key, value, 5)
-
-            # Get flow's speed.
-            pre = 0
-            period = setting.MONITOR_PERIOD
-            tmp = self.flow_stats[dpid][key]
-            if len(tmp) > 1:
-                pre = tmp[-2][1]
-                period = self._get_period(tmp[-1][2], tmp[-1][3],
-                                          tmp[-2][2], tmp[-2][3])
-
-            speed = self._get_speed(self.flow_stats[dpid][key][-1][1],
-                                    pre, period)
-
-            self._save_stats(self.flow_speed[dpid], key, speed, 5)
-
     @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
     def _port_stats_reply_handler(self, ev):
         """
@@ -280,48 +244,6 @@ class NetworkMonitor(app_manager.RyuApp):
                 self._save_stats(self.port_speed, key, speed, 5)
                 self._save_freebandwidth(dpid, port_no, speed)
 
-    # @set_ev_cls(ofp_event.EventOFPPortDescStatsReply, MAIN_DISPATCHER)
-    # def port_desc_stats_reply_handler(self, ev):
-    #     """
-    #         Save port description info.
-    #     """
-    #     msg = ev.msg
-    #     dpid = msg.datapath.id
-    #     ofproto = msg.datapath.ofproto
-    #
-    #     config_dict = {ofproto.OFPPC_PORT_DOWN: "Down",
-    #                    ofproto.OFPPC_NO_RECV: "No Recv",
-    #                    ofproto.OFPPC_NO_FWD: "No Farward",
-    #                    ofproto.OFPPC_NO_PACKET_IN: "No Packet-in"}
-    #
-    #     state_dict = {ofproto.OFPPS_LINK_DOWN: "Down",
-    #                   ofproto.OFPPS_BLOCKED: "Blocked",
-    #                   ofproto.OFPPS_LIVE: "Live"}
-    #
-    #     ports = []
-    #     for p in ev.msg.body:
-    #         ports.append('port_no=%d hw_addr=%s name=%s config=0x%08x '
-    #                      'state=0x%08x curr=0x%08x advertised=0x%08x '
-    #                      'supported=0x%08x peer=0x%08x curr_speed=%d '
-    #                      'max_speed=%d' %
-    #                      (p.port_no, p.hw_addr,
-    #                       p.name, p.config,
-    #                       p.state, p.curr, p.advertised,
-    #                       p.supported, p.peer, p.curr_speed,
-    #                       p.max_speed))
-    #
-    #         if p.config in config_dict:
-    #             config = config_dict[p.config]
-    #         else:
-    #             config = "up"
-    #
-    #         if p.state in state_dict:
-    #             state = state_dict[p.state]
-    #         else:
-    #             state = "up"
-    #
-    #         port_feature = (config, state, p.curr_speed)
-    #         self.port_features[dpid][p.port_no] = port_feature
 
     @set_ev_cls(ofp_event.EventOFPPortStatus, MAIN_DISPATCHER)
     def _port_status_handler(self, ev):
