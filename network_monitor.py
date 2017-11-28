@@ -377,12 +377,11 @@ class NetworkMonitor(app_manager.RyuApp):
             print('datapath          port   ''rx-bytes '
                   'tx-bytes port-speed(B/s)'
                   ' current-capacity(Kbps)  '
-                  ' link-stat')
+                  )
             print('--------------   -------- ''------ '
                   '-------- -------- '
-                  '----------   '
-                  ' -----')
-            format = '%016x %8x %8d %8d %8.1f %16d %16s'
+                  '----------   ')
+            format = '%016x %8x %8d %8d %8.1f %16d'
             for dpid in bodys.keys():
                 for stat in sorted(bodys[dpid], key=attrgetter('port_no')):
                     if stat.port_no != ofproto_v1_3.OFPP_LOCAL:
@@ -391,8 +390,5 @@ class NetworkMonitor(app_manager.RyuApp):
                             stat.rx_bytes,
                             stat.tx_bytes,
                             abs(self.port_speed[(dpid, stat.port_no)][-1]),
-                            self.free_bandwidth[dpid][stat.port_no],
-                            # self.port_features[dpid][stat.port_no][2],
-                            # self.port_features[dpid][stat.port_no][0],
-                            self.port_features[dpid][stat.port_no][1]))
+                            self.free_bandwidth[dpid][stat.port_no]))
             print '\n'
