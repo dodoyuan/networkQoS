@@ -126,8 +126,8 @@ class ShortestForwarding(app_manager.RyuApp):
         actions.append(parser.OFPActionOutput(dst_port))
 
         match = parser.OFPMatch(
-            in_port=src_port,
-            ipv4_src=flow_info[0], ipv4_dst=flow_info[1])
+            in_port=src_port, eth_type=flow_info[0],
+            ipv4_src=flow_info[1], ipv4_dst=flow_info[2])
 
         self.add_flow(datapath, 1, match, actions,
                       idle_timeout=15, hard_timeout=60)
@@ -267,10 +267,10 @@ class ShortestForwarding(app_manager.RyuApp):
         if path is None or len(path) == 0:
             self.logger.info("Path error!")
             return
-        in_port = flow_info[2]
+        in_port = flow_info[3]
         first_dp = datapaths[path[0]]
         out_port = first_dp.ofproto.OFPP_LOCAL
-        back_info = (flow_info[1], flow_info[0])
+        back_info = (flow_info[0], flow_info[2], flow_info[1])
 
         # inter_link
         if len(path) > 2:
@@ -294,7 +294,7 @@ class ShortestForwarding(app_manager.RyuApp):
                 return
             src_port = port_pair[1]
 
-            dst_port = self.get_port(flow_info[1], access_table)
+            dst_port = self.get_port(flow_info[2], access_table)
             if dst_port is None:
                 self.logger.info("Last port is not found.")
                 return
@@ -316,7 +316,7 @@ class ShortestForwarding(app_manager.RyuApp):
 
         # src and dst on the same datapath
         else:
-            out_port = self.get_port(flow_info[1], access_table)
+            out_port = self.get_port(flow_info[2], access_table)
             if out_port is None:
                 self.logger.info("Out_port is None in same dp")
                 return
@@ -324,7 +324,7 @@ class ShortestForwarding(app_manager.RyuApp):
             self.send_flow_mod(first_dp, back_info, out_port, in_port)
             self.send_packet_out(first_dp, buffer_id, in_port, out_port, data)
 
-    def shortest_forwarding(self, msg, ip_src, ip_dst, require_band):
+    def shortest_forwarding(self, msg, eth_type, ip_src, ip_dst, require_band):
         """
             To calculate shortest forwarding path and install them into datapaths.
 
@@ -339,10 +339,10 @@ class ShortestForwarding(app_manager.RyuApp):
         if result:
             src_sw, dst_sw = result[0], result[1]
             if dst_sw:
-                self.logger.info("src %s dst %s " % (src_sw, dst_sw)) 
+                self.logger.info("src %s dst %s " % (src_sw, dst_sw))
                 path, reconfig_flag = self.get_path(src_sw, dst_sw, require_band, weight=self.weight)
                 self.logger.info("[PATH]%s<-->%s: %s" % (ip_src, ip_dst, path))
-                flow_info = (ip_src, ip_dst, in_port)
+                flow_info = (eth_type, ip_src, ip_dst, in_port)
                 # install flow entries to datapath along side the path.
                 self.install_flow(self.datapaths,
                                   self.awareness.link_to_port,
@@ -379,7 +379,8 @@ class ShortestForwarding(app_manager.RyuApp):
                 require_band = setting.require_band[ip_pkt.src]
                 # in_port = msg.match['in_port']
                 # self.ilp_data_handle(ip_pkt, in_port, datapath.id, require_band)
-                self.shortest_forwarding(msg, ip_pkt.src, ip_pkt.dst, require_band)
+                eth_type = pkt.get_protocols(ethernet.ethernet)[0].ethertype
+                self.shortest_forwarding(msg, eth_type, ip_pkt.src, ip_pkt.dst, require_band)
 
     @set_ev_cls(ofp_event.EventOFPFlowRemoved, MAIN_DISPATCHER)
     def _flow_removed_handler(self, ev):
