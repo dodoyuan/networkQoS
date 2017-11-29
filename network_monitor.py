@@ -131,7 +131,7 @@ class NetworkMonitor(app_manager.RyuApp):
         max_bw_of_paths = 0
         bw_guaranteed_paths = paths[0]
         for path in paths:
-            self.logger.info("fun get bw guaranteed path:%s" % path)
+            # self.logger.info("fun get bw guaranteed path:%s" % path)
             min_bw = setting.MAX_CAPACITY
             min_bw = self.get_min_bw_of_links(path, min_bw)
             if min_bw > max_bw_of_paths:
