@@ -373,9 +373,11 @@ class ShortestForwarding(app_manager.RyuApp):
 
         if isinstance(ip_pkt, ipv4.ipv4):
             self.logger.debug("IPV4 processing")
-            require_band = setting.require_band[ip_pkt.src]
-            self.ilp_data_handle(ip_pkt, in_port, datapath.id, require_band)
-            self.shortest_forwarding(msg, ip_pkt.src, ip_pkt.dst, require_band)
+            if len(pkt.get_protocols(ethernet.ethernet)):
+                # eth_type = pkt.get_protocols(ethernet.ethernet)[0].ethertype
+                require_band = setting.require_band[ip_pkt.src]
+                self.ilp_data_handle(ip_pkt, in_port, datapath.id, require_band)
+                self.shortest_forwarding(msg, ip_pkt.src, ip_pkt.dst, require_band)
 
     @set_ev_cls(ofp_event.EventOFPFlowRemoved, MAIN_DISPATCHER)
     def _flow_removed_handler(self, ev):
@@ -417,7 +419,7 @@ class ShortestForwarding(app_manager.RyuApp):
         '''
         # avoid repeat packet-in packet to controller
         if ip_pkt.src not in self.flow.values():
-
+            self.logger.info("ip_src: %s,ip_dst: %s,in_port: %s" % (ip_pkt.src, ip_pkt.dst, in_port))
             # for simplification, use (ip_pkt.src, ip_pkt.src, in_port)
             # identification of a flow
             self.flow[self.count] = (ip_pkt.src, ip_pkt.dst, in_port)
@@ -429,5 +431,6 @@ class ShortestForwarding(app_manager.RyuApp):
             self.src_dst[self.count] = (result[0], result[1])
 
             self.count += 1  # flow identification
-            assert self.count < 10
+            print 'count', self.count
+            # assert self.count < 10
 
