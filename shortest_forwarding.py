@@ -339,7 +339,7 @@ class ShortestForwarding(app_manager.RyuApp):
         if result:
             src_sw, dst_sw = result[0], result[1]
             if dst_sw:
-                print "src dst", src_sw, dst_sw
+                self.logger.info("src %s dst %s " % (src_sw, dst_sw)) 
                 path, reconfig_flag = self.get_path(src_sw, dst_sw, require_band, weight=self.weight)
                 self.logger.info("[PATH]%s<-->%s: %s" % (ip_src, ip_dst, path))
                 flow_info = (ip_src, ip_dst, in_port)
