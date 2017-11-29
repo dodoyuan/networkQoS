@@ -30,9 +30,6 @@ from ryu.lib.packet import packet
 import setting
 
 
-# CONF = cfg.CONF
-
-
 class NetworkMonitor(app_manager.RyuApp):
     """
         NetworkMonitor is a Ryu app for collecting traffic information.

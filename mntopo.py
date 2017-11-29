@@ -19,11 +19,11 @@ if '__main__' == __name__:
     h4 = net.addHost('h4')
     h5 = net.addHost('h5')
 
-    net.addLink(s1, h1, bw=10)
-    net.addLink(s1, h2, bw=10)
-    net.addLink(s1, h3, bw=10)
-    net.addLink(s1, h4, bw=10)
-    net.addLink(s2, h5, bw=10)
+    net.addLink(s1, h1, bw=100)
+    net.addLink(s1, h2, bw=100)
+    net.addLink(s1, h3, bw=100)
+    net.addLink(s1, h4, bw=100)
+    net.addLink(s2, h5, bw=100)
 
     net.addLink(s1, s2, bw=10)
     net.addLink(s1, s3, bw=10)

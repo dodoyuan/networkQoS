@@ -38,8 +38,7 @@ import network_awareness
 import network_monitor
 # import network_delay_detector
 import setting
-
-
+from network_reconfigration import milp_constrains
 
 
 class ShortestForwarding(app_manager.RyuApp):
@@ -68,11 +67,14 @@ class ShortestForwarding(app_manager.RyuApp):
         # self.delay_detector = kwargs["network_delay_detector"]
         self.datapaths = {}
         self.weight = self.WEIGHT_MODEL[setting.WEIGHT]
-        # the required band of each host
+        # below is data for ilp process
         self.require = {}
         # the priority
         self.priority = {}
         self.map = {}
+        self.flow = {}   # num(count)-->(ip_src,ip_dst,in_port)
+        self.count = 1
+        self.src_dst = {}
 
     def set_weight_mode(self, weight):
         """
@@ -124,8 +126,8 @@ class ShortestForwarding(app_manager.RyuApp):
         actions.append(parser.OFPActionOutput(dst_port))
 
         match = parser.OFPMatch(
-            in_port=src_port, eth_type=flow_info[0],
-            ipv4_src=flow_info[1], ipv4_dst=flow_info[2])
+            in_port=src_port,
+            ipv4_src=flow_info[0], ipv4_dst=flow_info[1])
 
         self.add_flow(datapath, 1, match, actions,
                       idle_timeout=15, hard_timeout=60)
@@ -228,7 +230,6 @@ class ShortestForwarding(app_manager.RyuApp):
         """
         shortest_paths = self.awareness.shortest_paths
         # graph = self.awareness.graph
-
         if weight == self.WEIGHT_MODEL['hop']:
             return shortest_paths.get(src).get(dst)[0]
         elif weight == self.WEIGHT_MODEL['bw']:
@@ -266,10 +267,10 @@ class ShortestForwarding(app_manager.RyuApp):
         if path is None or len(path) == 0:
             self.logger.info("Path error!")
             return
-        in_port = flow_info[3]
+        in_port = flow_info[2]
         first_dp = datapaths[path[0]]
         out_port = first_dp.ofproto.OFPP_LOCAL
-        back_info = (flow_info[0], flow_info[2], flow_info[1])
+        back_info = (flow_info[1], flow_info[0])
 
         # inter_link
         if len(path) > 2:
@@ -293,7 +294,7 @@ class ShortestForwarding(app_manager.RyuApp):
                 return
             src_port = port_pair[1]
 
-            dst_port = self.get_port(flow_info[2], access_table)
+            dst_port = self.get_port(flow_info[1], access_table)
             if dst_port is None:
                 self.logger.info("Last port is not found.")
                 return
@@ -315,7 +316,7 @@ class ShortestForwarding(app_manager.RyuApp):
 
         # src and dst on the same datapath
         else:
-            out_port = self.get_port(flow_info[2], access_table)
+            out_port = self.get_port(flow_info[1], access_table)
             if out_port is None:
                 self.logger.info("Out_port is None in same dp")
                 return
@@ -323,14 +324,14 @@ class ShortestForwarding(app_manager.RyuApp):
             self.send_flow_mod(first_dp, back_info, out_port, in_port)
             self.send_packet_out(first_dp, buffer_id, in_port, out_port, data)
 
-    def shortest_forwarding(self, msg, eth_type, ip_src, ip_dst, require_band):
+    def shortest_forwarding(self, msg, ip_src, ip_dst, require_band):
         """
             To calculate shortest forwarding path and install them into datapaths.
 
         """
         datapath = msg.datapath
-        ofproto = datapath.ofproto
-        parser = datapath.ofproto_parser
+        # ofproto = datapath.ofproto
+        # parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
         reconfig_flag = 0
 
@@ -338,10 +339,9 @@ class ShortestForwarding(app_manager.RyuApp):
         if result:
             src_sw, dst_sw = result[0], result[1]
             if dst_sw:
-                # Path has already calculated, just get it.
                 path, reconfig_flag = self.get_path(src_sw, dst_sw, require_band, weight=self.weight)
                 self.logger.info("[PATH]%s<-->%s: %s" % (ip_src, ip_dst, path))
-                flow_info = (eth_type, ip_src, ip_dst, in_port)
+                flow_info = (ip_src, ip_dst, in_port)
                 # install flow entries to datapath along side the path.
                 self.install_flow(self.datapaths,
                                   self.awareness.link_to_port,
@@ -349,7 +349,9 @@ class ShortestForwarding(app_manager.RyuApp):
                                   flow_info, msg.buffer_id, msg.data)
         # if flag is 1,denote there must be congestion
         if reconfig_flag:
-            self.network_reconfigration()
+            path = self.reconfigration()
+            self.logger.info("path :%s" % path)
+            self.logger.info("flow info: %s" % self.flow)
         return
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
@@ -370,16 +372,10 @@ class ShortestForwarding(app_manager.RyuApp):
             self.arp_forwarding(msg, arp_pkt.src_ip, arp_pkt.dst_ip)
 
         if isinstance(ip_pkt, ipv4.ipv4):
-            # add a required matrix
-            require_band = setting.require_band[ip_pkt.src]
-            self.require[ip_pkt.src] = require_band
-            self.priority[ip_pkt.src] = setting.priority_weight[ip_pkt.src]
-            self.map[(ip_pkt.dst,in_port)] = ip_pkt.src
-
             self.logger.debug("IPV4 processing")
-            if len(pkt.get_protocols(ethernet.ethernet)):
-                eth_type = pkt.get_protocols(ethernet.ethernet)[0].ethertype
-                self.shortest_forwarding(msg, eth_type, ip_pkt.src, ip_pkt.dst, require_band)
+            require_band = setting.require_band[ip_pkt.src]
+            self.ilp_data_handle(ip_pkt, in_port, datapath.id, require_band)
+            self.shortest_forwarding(msg, ip_pkt.src, ip_pkt.dst, require_band)
 
     @set_ev_cls(ofp_event.EventOFPFlowRemoved, MAIN_DISPATCHER)
     def _flow_removed_handler(self, ev):
@@ -388,7 +384,6 @@ class ShortestForwarding(app_manager.RyuApp):
             the dict for require and priority.
         '''
         self.logger.info("flow removed handler")
-        print 'flow removed handler'
         msg = ev.msg
         dp = msg.datapath
         ofp = dp.ofproto
@@ -400,8 +395,39 @@ class ShortestForwarding(app_manager.RyuApp):
                 del self.require[flow_ip]
                 del self.priority[flow_ip]
 
+    def reconfigration(self):
+        '''
+           handle the network re-configration. calling the ilp module
+        '''
+        self.logger.info('not enough bandwidth ILP enter')
+        # nodes, edges, r, p, flow, capacity, src_dst
+        switch = self.awareness.switches
+        edges = self.awareness.edges
+        flow = self.flow.keys()
+        capacity = setting.link_capacity
+        src_dst = self.src_dst
+        assert len(flow) == len(src_dst)
+        path = milp_constrains(switch, edges, self.require, self.priority,
+                               flow, capacity, src_dst)
+        return path
 
-    def network_reconfigration(self):
-        print 'not enough bandwith ILP enter'
-        return True
+    def ilp_data_handle(self, ip_pkt, in_port, datapath_id, require_band):
+        '''
+           generating the data for ilp module
+        '''
+        # avoid repeat packet-in packet to controller
+        if ip_pkt.src not in self.flow.values():
+
+            # for simplification, use (ip_pkt.src, ip_pkt.src, in_port)
+            # identification of a flow
+            self.flow[self.count] = (ip_pkt.src, ip_pkt.dst, in_port)
+            self.require[self.count] = require_band
+            self.priority[self.count] = setting.priority_weight[ip_pkt.src]
+            self.map[(ip_pkt.dst, in_port)] = ip_pkt.src
+
+            result = self.get_sw(datapath_id, in_port, ip_pkt.src, ip_pkt.dst)
+            self.src_dst[self.count] = (result[0], result[1])
+
+            self.count += 1  # flow identification
+            assert self.count < 10
 

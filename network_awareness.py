@@ -64,6 +64,7 @@ class NetworkAwareness(app_manager.RyuApp):
         self.access_ports = {}       # dpid->port_num
         self.interior_ports = {}     # dpid->port_num
         self.switches = []
+        self.edges = []
 
         self.graph = nx.DiGraph()
         self.pre_graph = nx.DiGraph()
@@ -141,6 +142,9 @@ class NetworkAwareness(app_manager.RyuApp):
                     self.graph.add_edge(src, dst, weight=0)
                 elif (src, dst) in link_list:
                     self.graph.add_edge(src, dst, weight=1)
+                    # add a data for ilp module
+                    self.edges.append((src, dst))
+                    self.edges.append((dst, src))
         return self.graph
 
     # 通过交换机实例获取到端口，并创建数据结构
