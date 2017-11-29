@@ -350,13 +350,13 @@ class ShortestForwarding(app_manager.RyuApp):
                                   flow_info, msg.buffer_id, msg.data)
         # if flag is 1,denote there must be congestion
         if reconfig_flag:
-            # allpath = self.reconfigration()
+            #allpath = self.reconfigration()
             # self.logger.info("path :%s" % allpath)
             self.logger.info("enter reconfigration")
-        self.logger.info("flow info: %s" % self.flow)
-        self.logger.info("require info: %s" % self.require)
-        self.logger.info("priority info: %s" % self.priority)
-        self.logger.info("src_dst info: %s" % self.src_dst)
+        # self.logger.info("flow info: %s" % self.flow)
+        # self.logger.info("require info: %s" % self.require)
+        # self.logger.info("priority info: %s" % self.priority)
+        # self.logger.info("src_dst info: %s" % self.src_dst)
 
 
         return
