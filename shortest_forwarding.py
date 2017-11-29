@@ -339,6 +339,7 @@ class ShortestForwarding(app_manager.RyuApp):
         if result:
             src_sw, dst_sw = result[0], result[1]
             if dst_sw:
+                print "src dst", src_sw, dst_sw
                 path, reconfig_flag = self.get_path(src_sw, dst_sw, require_band, weight=self.weight)
                 self.logger.info("[PATH]%s<-->%s: %s" % (ip_src, ip_dst, path))
                 flow_info = (ip_src, ip_dst, in_port)
@@ -376,8 +377,8 @@ class ShortestForwarding(app_manager.RyuApp):
             if len(pkt.get_protocols(ethernet.ethernet)):
                 # eth_type = pkt.get_protocols(ethernet.ethernet)[0].ethertype
                 require_band = setting.require_band[ip_pkt.src]
-                in_port = msg.match['in_port']
-                self.ilp_data_handle(ip_pkt, in_port, datapath.id, require_band)
+                # in_port = msg.match['in_port']
+                # self.ilp_data_handle(ip_pkt, in_port, datapath.id, require_band)
                 self.shortest_forwarding(msg, ip_pkt.src, ip_pkt.dst, require_band)
 
     @set_ev_cls(ofp_event.EventOFPFlowRemoved, MAIN_DISPATCHER)
