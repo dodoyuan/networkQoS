@@ -330,8 +330,8 @@ class ShortestForwarding(app_manager.RyuApp):
 
         """
         datapath = msg.datapath
-        # ofproto = datapath.ofproto
-        # parser = datapath.ofproto_parser
+        ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
         reconfig_flag = 0
 
@@ -349,8 +349,8 @@ class ShortestForwarding(app_manager.RyuApp):
                                   flow_info, msg.buffer_id, msg.data)
         # if flag is 1,denote there must be congestion
         if reconfig_flag:
-            path = self.reconfigration()
-            self.logger.info("path :%s" % path)
+            allpath = self.reconfigration()
+            self.logger.info("path :%s" % allpath)
             self.logger.info("flow info: %s" % self.flow)
         return
 
@@ -362,7 +362,7 @@ class ShortestForwarding(app_manager.RyuApp):
         '''
         msg = ev.msg
         datapath = msg.datapath
-        in_port = msg.match['in_port']
+        # in_port = msg.match['in_port']
         pkt = packet.Packet(msg.data)
         arp_pkt = pkt.get_protocol(arp.arp)
         ip_pkt = pkt.get_protocol(ipv4.ipv4)
@@ -376,6 +376,7 @@ class ShortestForwarding(app_manager.RyuApp):
             if len(pkt.get_protocols(ethernet.ethernet)):
                 # eth_type = pkt.get_protocols(ethernet.ethernet)[0].ethertype
                 require_band = setting.require_band[ip_pkt.src]
+                in_port = msg.match['in_port']
                 self.ilp_data_handle(ip_pkt, in_port, datapath.id, require_band)
                 self.shortest_forwarding(msg, ip_pkt.src, ip_pkt.dst, require_band)
 
@@ -418,11 +419,11 @@ class ShortestForwarding(app_manager.RyuApp):
            generating the data for ilp module
         '''
         # avoid repeat packet-in packet to controller
-        if (ip_pkt.src, ip_pkt.dst, in_port) not in self.flow.values():
+        if (ip_pkt.src, ip_pkt.dst) not in self.flow.values():
             self.logger.info("ip_src: %s,ip_dst: %s,in_port: %s" % (ip_pkt.src, ip_pkt.dst, in_port))
-            # for simplification, use (ip_pkt.src, ip_pkt.src, in_port)
+            # for simplification, use (ip_pkt.src, ip_pkt.src)
             # identification of a flow
-            self.flow[self.count] = (ip_pkt.src, ip_pkt.dst, in_port)
+            self.flow[self.count] = (ip_pkt.src, ip_pkt.dst)
             self.require[self.count] = require_band
             self.priority[self.count] = setting.priority_weight[ip_pkt.src]
             self.map[(ip_pkt.dst, in_port)] = ip_pkt.src
