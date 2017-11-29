@@ -32,7 +32,7 @@ def exeTime(func):
     return newFunc
 
 
-def neighbor_head(node):
+def neighbor_head(node, edges):
     # return all the linked neighbors of node node
     linked_edges = []
     for e in edges:
@@ -41,7 +41,7 @@ def neighbor_head(node):
     return linked_edges
 
 
-def neighbor_tail(node):
+def neighbor_tail(node, edges):
     # return all the linked neighbors of node node
     linked_edges = []
     for e in edges:
@@ -62,8 +62,8 @@ def milp_constrains(nodes, edges, r, p, flow, capacity, src_dst):
     # flow constrain
     for n in flow:      # traverse every node
         for m in nodes:  # arbitrarily intermediate node
-            model += pulp.lpSum(u[(n, edge)] for edge in neighbor_head(m)) - \
-                     pulp.lpSum(u[(n, edge)] for edge in neighbor_tail(m)) == (d[n][m] - s[n][m]) * y[n]
+            model += pulp.lpSum(u[(n, edge)] for edge in neighbor_head(m, edges)) - \
+                     pulp.lpSum(u[(n, edge)] for edge in neighbor_tail(m, edges)) == (d[n][m] - s[n][m]) * y[n]
             # model += pulp.lpSum(u[(n, edge)] for edge in neighbor_head(m)) + \
             #          pulp.lpSum(u[(n, edge)] for edge in neighbor_tail(m)) <= 1
 
