@@ -418,7 +418,7 @@ class ShortestForwarding(app_manager.RyuApp):
            generating the data for ilp module
         '''
         # avoid repeat packet-in packet to controller
-        if ip_pkt.src not in self.flow.values():
+        if (ip_pkt.src, ip_pkt.dst, in_port) not in self.flow.values():
             self.logger.info("ip_src: %s,ip_dst: %s,in_port: %s" % (ip_pkt.src, ip_pkt.dst, in_port))
             # for simplification, use (ip_pkt.src, ip_pkt.src, in_port)
             # identification of a flow
