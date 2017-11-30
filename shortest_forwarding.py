@@ -74,6 +74,7 @@ class ShortestForwarding(app_manager.RyuApp):
         self.priority = {}
         self.map = {}
         self.flow = {}   # num(count)-->(eth_type,ip_src,ip_dst,in_port)
+        self.flow_ip = []
         self.count = 1
         self.src_dst = {}
         self.config_priority = 2  #
@@ -398,9 +399,8 @@ class ShortestForwarding(app_manager.RyuApp):
             self.logger.debug("IPV4 processing")
             if len(pkt.get_protocols(ethernet.ethernet)):
                 require_band = setting.require_band[ip_pkt.src]
-                in_port = msg.match['in_port']
                 eth_type = pkt.get_protocols(ethernet.ethernet)[0].ethertype
-                self.ilp_data_handle(ip_pkt, eth_type, in_port, datapath.id, require_band)
+                self.ilp_data_handle(ip_pkt, eth_type, datapath.id, require_band)
                 self.shortest_forwarding(msg, eth_type, ip_pkt.src, ip_pkt.dst, require_band)
 
     @set_ev_cls(ofp_event.EventOFPFlowRemoved, MAIN_DISPATCHER)
@@ -447,19 +447,19 @@ class ShortestForwarding(app_manager.RyuApp):
                                flow, capacity, src_dst)
         return path
 
-    def ilp_data_handle(self, ip_pkt, eth_type, in_port, datapath_id, require_band):
+    def ilp_data_handle(self, ip_pkt, eth_type, datapath_id, require_band):
         '''
            generating the data for ilp module
         '''
         # avoid reverse path packet-in packet to controller
-        if (eth_type,ip_pkt.dst, ip_pkt.src,in_port) not in self.flow.values():
-            if (eth_type, ip_pkt.src, ip_pkt.dst, in_port) not in self.flow.values():
+        if (ip_pkt.dst, ip_pkt.src) not in self.flow_ip:
+            if (ip_pkt.src, ip_pkt.dst) not in self.flow_ip:
+                in_port = self.get_port(ip_pkt.src, self.awareness.access_table)
                 self.logger.info("ip_src: %s,ip_dst: %s,in_port: %s" % (ip_pkt.src, ip_pkt.dst, in_port))
                 self.logger.info("count:%s" % self.count)
                 self.handle_flag = 1   # this is new flow, can handle with ilp module
-                # for simplification, use (ip_pkt.src, ip_pkt.src)
-                # identification of a flow
                 self.flow[self.count] = (eth_type, ip_pkt.src, ip_pkt.dst, in_port)
+                self.flow_ip.append((ip_pkt.src, ip_pkt.dst))
                 self.require[self.count] = require_band
                 self.priority[self.count] = setting.priority_weight[ip_pkt.src]
                 self.map[(ip_pkt.dst, in_port)] = ip_pkt.src

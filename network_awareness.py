@@ -59,7 +59,7 @@ class NetworkAwareness(app_manager.RyuApp):
         # 用来保存一条链路以及该链路对应的端口号
         self.link_to_port = {}       # (src_dpid,dst_dpid)->(src_port,dst_port)
         #
-        self.access_table = {}       # {(sw,port) :[host1_ip]}
+        self.access_table = {}       # {(sw,port) :(ip, mac)}
         self.switch_port_table = {}  # dpip->port_num
         self.access_ports = {}       # dpid->port_num
         self.interior_ports = {}     # dpid->port_num
