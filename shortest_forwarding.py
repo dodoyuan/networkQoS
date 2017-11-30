@@ -109,9 +109,6 @@ class ShortestForwarding(app_manager.RyuApp):
 
             self.ilp_handle_info(max_priority, allpath.keys(), flow_identity)
             self.config_priority += 1
-            hub.sleep(2)
-        self.show_ilp_data()
-        hub.sleep(5)
 
     def ilp_handle_info(self, max_priority, flow_list, flow_info):
         '''
@@ -402,7 +399,7 @@ class ShortestForwarding(app_manager.RyuApp):
                                   self.awareness.access_table, path,
                                   flow_info, msg.buffer_id, msg.data, 1)
 
-        # self._ilp_process()
+        self._ilp_process()
         return
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
@@ -444,13 +441,13 @@ class ShortestForwarding(app_manager.RyuApp):
             flow_dst = msg.match.get('ipv4_dst')
             flow_inport = msg.match.get('in_port')
             flow_src = self.map[(flow_dst, flow_inport)]
-            for key in self.flow:
-                if (flow_src, flow_dst, flow_inport) == key[1:] and dp.id == self.flow[key][2][0]:
-                    self.logger.info("del flow info :%s" % str(self.flow[key]))
+            for key, value in self.flow.items():
+                if (flow_src, flow_dst, flow_inport) == key[1:] and dp.id == value[2][0]:
+                    self.logger.info("del flow info :%s" % str(key))
                     del self.flow[key]
                     self.flow_ip.remove((flow_src, flow_dst))
                     del self.map[(flow_dst, flow_inport)]
-
+                    self.show_ilp_data()
 
     def reconfigration(self):
         '''
@@ -508,6 +505,7 @@ class ShortestForwarding(app_manager.RyuApp):
                 self.flow_ip.append((ip_pkt.src, ip_pkt.dst))
 
                 self.map[(ip_pkt.dst, in_port)] = ip_pkt.src
+                self.show_ilp_data()
                 self.count += 1  # flow identification
                 # assert self.count < 10
 
