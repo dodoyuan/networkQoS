@@ -115,13 +115,12 @@ class ShortestForwarding(app_manager.RyuApp):
         '''
            use to inform which flow handle,and which not
         '''
-        for num in flow_list:
-            self.logger.info("handle flow : %s" % str(flow_info[num]))
-            flow_info.remove(flow_info[num])
-        self.logger.info("the max priority weight is: %s" % str(max_priority))
-        if flow_info:
-            for flow in flow_info:
-                self.logger.info("not handle flow : %s" % str(flow))
+        self.logger.info("the max priority weight is: %d" % max_priority)
+        for num in range(len(flow_info)):
+            if num in flow_list:
+                self.logger.info("handle flow : %s" % str(flow_info[num]))
+            else:
+                self.logger.info("not handle flow : %s" % str(flow_info[num]))
 
     @set_ev_cls(ofp_event.EventOFPStateChange,
                 [MAIN_DISPATCHER, DEAD_DISPATCHER])
