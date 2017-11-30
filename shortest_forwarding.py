@@ -103,6 +103,7 @@ class ShortestForwarding(app_manager.RyuApp):
             self.logger.info("path :%s" % allpath)
             for flow_num, path in allpath.items():
                 flow_info = flow_identity[flow_num]
+                print flow_info
                 self.install_flow(self.datapaths,
                                   self.awareness.link_to_port,
                                   self.awareness.access_table, path,
@@ -116,7 +117,8 @@ class ShortestForwarding(app_manager.RyuApp):
            use to inform which flow handle,and which not
         '''
         for num in flow_list:
-            self.logger.info("handle flow : %s" % str(flow_info[num]))
+            # self.logger.info("handle flow : %s" % str(flow_info[num]))
+            print num
             flow_info.pop(num)
         self.logger.info("the max priority weight is: %s" % str(max_priority))
         if flow_info:
