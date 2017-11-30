@@ -96,6 +96,7 @@ class ShortestForwarding(app_manager.RyuApp):
         '''
         # if flag is 1,denote there must be congestion
         hub.sleep(2)
+        self.logger.info("config_flag:%s handle-flag %s" % (self.config_flag, self.handle_flag))
         if self.config_flag and self.handle_flag:
             self.logger.info("enter reconfigration")
             self.handle_flag = 0  # avoid handle repeat request
