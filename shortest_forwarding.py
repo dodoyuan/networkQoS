@@ -99,16 +99,29 @@ class ShortestForwarding(app_manager.RyuApp):
             self.logger.debug("enter reconfigration")
             self.handle_flag = 0  # avoid handle repeat request
             self.config_flag = 0
-            allpath = self.reconfigration()
+            allpath, flow_identity, max_priority = self.reconfigration()
             self.logger.info("path :%s" % allpath)
-            for flow, path in allpath.items():
-                flow_info = self.flow[flow]
+            for flow_num, path in allpath.items():
+                flow_info = flow_identity[flow_num]
                 self.install_flow(self.datapaths,
                                   self.awareness.link_to_port,
                                   self.awareness.access_table, path,
                                   flow_info, None, prio=self.config_priority)
 
+            self.ilp_handle_info(max_priority, allpath.keys(), flow_identity)
             self.config_priority += 1
+
+    def ilp_handle_info(self, max_priority, flow_list, flow_info):
+        '''
+           use to inform which flow handle,and which not
+        '''
+        for num in flow_list:
+            self.logger.info("handle flow : %s" % flow_info[num])
+            flow_info.pop(num)
+        self.logger.info("the max priority weight is: %s" % max_priority)
+        if flow_info:
+            for flow in flow_info:
+                self.logger.info("not handle flow : %s" % flow)
 
     @set_ev_cls(ofp_event.EventOFPStateChange,
                 [MAIN_DISPATCHER, DEAD_DISPATCHER])
@@ -454,7 +467,7 @@ class ShortestForwarding(app_manager.RyuApp):
         assert len(flow) == len(src_dst)
         path, max_priority = milp_constrains(switch, edges, require, priority,
                                flow_num, capacity, src_dst)
-        return path
+        return path, flow, max_priority
 
     def ilp_data_handle(self, ip_pkt, eth_type, datapath_id, require_band):
         '''
