@@ -15,15 +15,15 @@
 # limitations under the License.
 
 # coding=utf-8
-import logging
-import struct
-import networkx as nx
-from operator import attrgetter
-from ryu import cfg
+# import logging
+# import struct
+# import networkx as nx
+# from operator import attrgetter
+# from ryu import cfg
 from ryu.base import app_manager
 from ryu.controller import ofp_event
 from ryu.controller.handler import MAIN_DISPATCHER, DEAD_DISPATCHER
-from ryu.controller.handler import CONFIG_DISPATCHER
+# from ryu.controller.handler import CONFIG_DISPATCHER
 from ryu.controller.handler import set_ev_cls
 from ryu.ofproto import ofproto_v1_3
 from ryu.lib.packet import packet
@@ -31,9 +31,9 @@ from ryu.lib.packet import ethernet
 from ryu.lib.packet import ipv4
 from ryu.lib.packet import arp
 from ryu.lib import hub
-from ryu.topology import event, switches
-from ryu.topology.api import get_switch, get_link
-
+# from ryu.topology import event, switches
+# from ryu.topology.api import get_switch, get_link
+from collections import defaultdict
 import network_awareness
 import network_monitor
 # import network_delay_detector
@@ -68,11 +68,11 @@ class ShortestForwarding(app_manager.RyuApp):
         self.datapaths = {}
         self.weight = self.WEIGHT_MODEL[setting.WEIGHT]
         # below is data for ilp process
-        self.ilp_module_thread = hub.spawn(self._ilp_process)
-        self.map = {}
 
-        self.flow = {}   # (eth_type, ip_pkt.src, ip_pkt.dst, in_port)-->
-                         # [require_band,priority,(src,dst)]
+        # self.ilp_module_thread = hub.spawn(self._ilp_process)
+        self.map = defaultdict(str)
+        self.flow = defaultdict(list)   # (eth_type, ip_pkt.src, ip_pkt.dst, in_port)-->
+                                        # [require_band,priority,(src,dst)]
         self.flow_ip = []
         self.count = 1
         self.config_priority = 2  #
@@ -111,7 +111,7 @@ class ShortestForwarding(app_manager.RyuApp):
             self.config_priority += 1
             hub.sleep(2)
         self.show_ilp_data()
-        hub.sleep(6)
+        hub.sleep(5)
 
     def ilp_handle_info(self, max_priority, flow_list, flow_info):
         '''
