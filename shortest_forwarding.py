@@ -375,7 +375,7 @@ class ShortestForwarding(app_manager.RyuApp):
 
         if isinstance(ip_pkt, ipv4.ipv4):
             self.logger.debug("IPV4 processing")
-            if len(pkt.get_protocols(ethernet.ethernet)) and (ip_pkt.src, ip_pkt.dst) not in self.flow.values():
+            if len(pkt.get_protocols(ethernet.ethernet)):
                 require_band = setting.require_band[ip_pkt.src]
                 in_port = msg.match['in_port']
                 self.ilp_data_handle(ip_pkt, in_port, datapath.id, require_band)
@@ -430,8 +430,8 @@ class ShortestForwarding(app_manager.RyuApp):
         '''
            generating the data for ilp module
         '''
-        # avoid reverse packet-in packet to controller
-        if (ip_pkt.dst, ip_pkt.src) not in self.flow.values():
+        # avoid reverse path packet-in packet to controller
+        if (ip_pkt.dst, ip_pkt.src) not in self.flow.values() and (ip_pkt.src, ip_pkt.dst) not in self.flow.values():
             self.logger.info("ip_src: %s,ip_dst: %s,in_port: %s" % (ip_pkt.src, ip_pkt.dst, in_port))
             self.logger.info("count:%s" % self.count)
             # for simplification, use (ip_pkt.src, ip_pkt.src)
@@ -443,6 +443,6 @@ class ShortestForwarding(app_manager.RyuApp):
 
             result = self.get_sw(datapath_id, in_port, ip_pkt.src, ip_pkt.dst)
             self.src_dst[self.count] = (result[0], result[1])
-        self.count += 1  # flow identification
-        # assert self.count < 10
+            self.count += 1  # flow identification
+            # assert self.count < 10
 
