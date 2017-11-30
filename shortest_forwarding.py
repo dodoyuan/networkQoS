@@ -452,19 +452,20 @@ class ShortestForwarding(app_manager.RyuApp):
            generating the data for ilp module
         '''
         # avoid reverse path packet-in packet to controller
-        if (ip_pkt.dst, ip_pkt.src) not in self.flow.values() and (ip_pkt.src, ip_pkt.dst) not in self.flow.values():
-            self.logger.info("ip_src: %s,ip_dst: %s,in_port: %s" % (ip_pkt.src, ip_pkt.dst, in_port))
-            self.logger.info("count:%s" % self.count)
-            self.handle_flag = 1   # this is new flow, can handle with ilp module
-            # for simplification, use (ip_pkt.src, ip_pkt.src)
-            # identification of a flow
-            self.flow[self.count] = (eth_type, ip_pkt.src, ip_pkt.dst, in_port)
-            self.require[self.count] = require_band
-            self.priority[self.count] = setting.priority_weight[ip_pkt.src]
-            self.map[(ip_pkt.dst, in_port)] = ip_pkt.src
+        if (eth_type,ip_pkt.dst, ip_pkt.src,in_port) not in self.flow.values():
+            if (eth_type, ip_pkt.src, ip_pkt.dst, in_port) not in self.flow.values():
+                self.logger.info("ip_src: %s,ip_dst: %s,in_port: %s" % (ip_pkt.src, ip_pkt.dst, in_port))
+                self.logger.info("count:%s" % self.count)
+                self.handle_flag = 1   # this is new flow, can handle with ilp module
+                # for simplification, use (ip_pkt.src, ip_pkt.src)
+                # identification of a flow
+                self.flow[self.count] = (eth_type, ip_pkt.src, ip_pkt.dst, in_port)
+                self.require[self.count] = require_band
+                self.priority[self.count] = setting.priority_weight[ip_pkt.src]
+                self.map[(ip_pkt.dst, in_port)] = ip_pkt.src
 
-            result = self.get_sw(datapath_id, in_port, ip_pkt.src, ip_pkt.dst)
-            self.src_dst[self.count] = (result[0], result[1])
-            self.count += 1  # flow identification
-            # assert self.count < 10
+                result = self.get_sw(datapath_id, in_port, ip_pkt.src, ip_pkt.dst)
+                self.src_dst[self.count] = (result[0], result[1])
+                self.count += 1  # flow identification
+                # assert self.count < 10
 
