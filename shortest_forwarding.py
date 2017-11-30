@@ -68,7 +68,7 @@ class ShortestForwarding(app_manager.RyuApp):
         self.datapaths = {}
         self.weight = self.WEIGHT_MODEL[setting.WEIGHT]
         # below is data for ilp process
-        self.ilp_module_thread = hub.spawn(self._ilp_process)
+        # self.ilp_module_thread = hub.spawn(self._ilp_process)
         self.require = {}
         # the priority
         self.priority = {}
@@ -95,7 +95,6 @@ class ShortestForwarding(app_manager.RyuApp):
             the entry for ilp process
         '''
         # if flag is 1,denote there must be congestion
-        hub.sleep(2)
         self.logger.info("config_flag:%s handle-flag %s" % (self.config_flag, self.handle_flag))
         if self.config_flag and self.handle_flag:
             self.logger.info("enter reconfigration")
@@ -377,6 +376,7 @@ class ShortestForwarding(app_manager.RyuApp):
                                   self.awareness.access_table, path,
                                   flow_info, msg.buffer_id, msg.data, 1)
 
+        self._ilp_process()
         return
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
