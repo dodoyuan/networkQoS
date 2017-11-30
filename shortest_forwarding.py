@@ -30,7 +30,7 @@ from ryu.lib.packet import packet
 from ryu.lib.packet import ethernet
 from ryu.lib.packet import ipv4
 from ryu.lib.packet import arp
-from ryu.lib import hub
+
 from ryu.topology import event, switches
 from ryu.topology.api import get_switch, get_link
 
@@ -95,9 +95,9 @@ class ShortestForwarding(app_manager.RyuApp):
             the entry for ilp process
         '''
         # if flag is 1,denote there must be congestion
-        self.logger.info("config_flag:%s handle-flag %s" % (self.config_flag, self.handle_flag))
+        self.logger.debug("config_flag:%s handle-flag %s" % (self.config_flag, self.handle_flag))
         if self.config_flag and self.handle_flag:
-            self.logger.info("enter reconfigration")
+            self.logger.debug("enter reconfigration")
             self.handle_flag = 0  # avoid handle repeat request
             self.config_flag = 0
             allpath = self.reconfigration()
@@ -434,14 +434,14 @@ class ShortestForwarding(app_manager.RyuApp):
         capacity = setting.link_capacity
         src_dst = self.src_dst
 
-        self.logger.info('not enough bandwidth ILP enter')
-        self.logger.info("flow info: %s" % self.flow)
-        self.logger.info("require info: %s" % self.require)
-        self.logger.info("priority info: %s" % self.priority)
-        self.logger.info("src_dst info: %s" % self.src_dst)
-        self.logger.info("switch info: %s" % switch)
-        self.logger.info("edge info: %s" % edges)
-        self.logger.info("capacity info: %s" % capacity)
+        self.logger.debug('not enough bandwidth ILP enter')
+        self.logger.debug("flow info: %s" % self.flow)
+        self.logger.debug("require info: %s" % self.require)
+        self.logger.debug("priority info: %s" % self.priority)
+        self.logger.debug("src_dst info: %s" % self.src_dst)
+        self.logger.debug("switch info: %s" % switch)
+        self.logger.debug("edge info: %s" % edges)
+        self.logger.debug("capacity info: %s" % capacity)
 
         assert len(flow) == len(src_dst)
         path = milp_constrains(switch, edges, self.require, self.priority,
@@ -456,8 +456,8 @@ class ShortestForwarding(app_manager.RyuApp):
         if (ip_pkt.dst, ip_pkt.src) not in self.flow_ip:
             if (ip_pkt.src, ip_pkt.dst) not in self.flow_ip:
                 in_port = self.get_port(ip_pkt.src, self.awareness.access_table)
-                self.logger.info("ip_src: %s,ip_dst: %s,in_port: %s" % (ip_pkt.src, ip_pkt.dst, in_port))
-                self.logger.info("count:%s" % self.count)
+                self.logger.debug("ip_src: %s,ip_dst: %s,in_port: %s" % (ip_pkt.src, ip_pkt.dst, in_port))
+                self.logger.debug("count:%s" % self.count)
                 self.handle_flag = 1   # this is new flow, can handle with ilp module
                 self.flow[self.count] = (eth_type, ip_pkt.src, ip_pkt.dst, in_port)
                 self.flow_ip.append((ip_pkt.src, ip_pkt.dst))

@@ -49,7 +49,7 @@ def neighbor_tail(node, edges):
             linked_edges.append(e)
     return linked_edges
 
-@exeTime
+# @exeTime
 def milp_constrains(nodes, edges, r, p, flow, capacity, src_dst):
     s, d = gene_matrix(nodes, src_dst)
     model = pulp.LpProblem("suitable path for higher priority", pulp.LpMaximize)
@@ -79,19 +79,19 @@ def milp_constrains(nodes, edges, r, p, flow, capacity, src_dst):
     print status
 
     max_priority = pulp.value(model.objective)
-    print "the max priority is {}".format(max_priority)
+    # print "the max priority is {}".format(max_priority)
 
     path = defaultdict(dict)
     for v in model.variables():
         if v.varValue:
-            print v.name, '=', v.varValue
+            # print v.name, '=', v.varValue
             # selected_path_of_flow_(1,_(1,_5))
             if 'path' in v.name:
                 temp = v.name.split('_')
                 flow_number = int(temp[4][-2])
                 link_src, link_dst = int(temp[5][-2]), int(temp[6][-3])
                 path[flow_number][link_src] = link_dst
-    print path
+    # print path
     #  {1: {1: 5, 5: 6, 6: 7, 7: 8}, 2: {1: 2, 2: 3, 3: 4, 4: 8}}
     path = path_extr(src_dst, path)
     return path
