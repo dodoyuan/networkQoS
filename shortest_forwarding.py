@@ -435,7 +435,7 @@ class ShortestForwarding(app_manager.RyuApp):
         require, priority = [], []
         # (eth_type, ip_pkt.src, ip_pkt.dst, in_port)-->
         # [require_band,priority,(src_dp,dst_dp)]
-        for key, value in self.flow:
+        for key, value in self.flow.items():
             flow.append(key)
             require.append(value[0])
             priority.append(value[1])
