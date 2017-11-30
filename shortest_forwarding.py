@@ -352,12 +352,8 @@ class ShortestForwarding(app_manager.RyuApp):
         if reconfig_flag:
             self.logger.info("enter reconfigration")
             allpath = self.reconfigration()
-            self.logger.info("path :%s" % allpath)
+            # self.logger.info("path :%s" % allpath)
 
-        # self.logger.info("flow info: %s" % self.flow)
-        # self.logger.info("require info: %s" % self.require)
-        # self.logger.info("priority info: %s" % self.priority)
-        # self.logger.info("src_dst info: %s" % self.src_dst)
         return
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
@@ -379,7 +375,7 @@ class ShortestForwarding(app_manager.RyuApp):
 
         if isinstance(ip_pkt, ipv4.ipv4):
             self.logger.debug("IPV4 processing")
-            if len(pkt.get_protocols(ethernet.ethernet)):
+            if len(pkt.get_protocols(ethernet.ethernet)) and (ip_pkt.src, ip_pkt.dst) not in self.flow.values():
                 require_band = setting.require_band[ip_pkt.src]
                 in_port = msg.match['in_port']
                 self.ilp_data_handle(ip_pkt, in_port, datapath.id, require_band)
@@ -408,36 +404,44 @@ class ShortestForwarding(app_manager.RyuApp):
         '''
            handle the network re-configration. calling the ilp module
         '''
-        self.logger.info('not enough bandwidth ILP enter')
+
         # nodes, edges, r, p, flow, capacity, src_dst
         switch = self.awareness.switches
         edges = self.awareness.edges
         flow = self.flow.keys()
         capacity = setting.link_capacity
         src_dst = self.src_dst
+
+        self.logger.info('not enough bandwidth ILP enter')
+        self.logger.info("flow info: %s" % self.flow)
+        self.logger.info("require info: %s" % self.require)
+        self.logger.info("priority info: %s" % self.priority)
+        self.logger.info("src_dst info: %s" % self.src_dst)
+        self.logger.info("switch info: %s" % switch)
+        self.logger.info("edge info: %s" % edges)
+        self.logger.info("capacity info: %s" % capacity)
+
         assert len(flow) == len(src_dst)
-        path = milp_constrains(switch, edges, self.require, self.priority,
-                               flow, capacity, src_dst)
-        return path
+        # path = milp_constrains(switch, edges, self.require, self.priority,
+        #                       flow, capacity, src_dst)
+        return True
 
     def ilp_data_handle(self, ip_pkt, in_port, datapath_id, require_band):
         '''
            generating the data for ilp module
         '''
         # avoid repeat packet-in packet to controller
-        if (ip_pkt.src, ip_pkt.dst) not in self.flow.values():
-            self.logger.info("ip_src: %s,ip_dst: %s,in_port: %s" % (ip_pkt.src, ip_pkt.dst, in_port))
-            # for simplification, use (ip_pkt.src, ip_pkt.src)
-            # identification of a flow
-            self.flow[self.count] = (ip_pkt.src, ip_pkt.dst)
-            self.require[self.count] = require_band
-            self.priority[self.count] = setting.priority_weight[ip_pkt.src]
-            self.map[(ip_pkt.dst, in_port)] = ip_pkt.src
+        self.logger.info("ip_src: %s,ip_dst: %s,in_port: %s" % (ip_pkt.src, ip_pkt.dst, in_port))
+        self.logger.info("count:%s" % self.count)
+        # for simplification, use (ip_pkt.src, ip_pkt.src)
+        # identification of a flow
+        self.flow[self.count] = (ip_pkt.src, ip_pkt.dst)
+        self.require[self.count] = require_band
+        self.priority[self.count] = setting.priority_weight[ip_pkt.src]
+        self.map[(ip_pkt.dst, in_port)] = ip_pkt.src
 
-            result = self.get_sw(datapath_id, in_port, ip_pkt.src, ip_pkt.dst)
-            self.src_dst[self.count] = (result[0], result[1])
-
-            self.count += 1  # flow identification
-            print 'count:', self.count
-            # assert self.count < 10
+        result = self.get_sw(datapath_id, in_port, ip_pkt.src, ip_pkt.dst)
+        self.src_dst[self.count] = (result[0], result[1])
+        self.count += 1  # flow identification
+        # assert self.count < 10
 
