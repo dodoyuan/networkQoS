@@ -30,7 +30,7 @@ from ryu.lib.packet import packet
 from ryu.lib.packet import ethernet
 from ryu.lib.packet import ipv4
 from ryu.lib.packet import arp
-
+from ryu.lib import hub
 from ryu.topology import event, switches
 from ryu.topology.api import get_switch, get_link
 
@@ -68,14 +68,13 @@ class ShortestForwarding(app_manager.RyuApp):
         self.datapaths = {}
         self.weight = self.WEIGHT_MODEL[setting.WEIGHT]
         # below is data for ilp process
-        # self.ilp_module_thread = hub.spawn(self._ilp_process)
+        self.ilp_module_thread = hub.spawn(self._ilp_process)
         self.map = {}
 
         self.flow = {}   # (eth_type, ip_pkt.src, ip_pkt.dst, in_port)-->
                          # [require_band,priority,(src,dst)]
         self.flow_ip = []
         self.count = 1
-        self.src_dst = []
         self.config_priority = 2  #
         self.config_flag = 0
         self.handle_flag = 0
@@ -94,7 +93,7 @@ class ShortestForwarding(app_manager.RyuApp):
             the entry for ilp process
         '''
         # if flag is 1,denote there must be congestion
-        self.logger.debug("config_flag:%s handle-flag %s" % (self.config_flag, self.handle_flag))
+        # self.logger.debug("config_flag:%s handle-flag %s" % (self.config_flag, self.handle_flag))
         if self.config_flag and self.handle_flag:
             self.logger.debug("enter reconfigration")
             self.handle_flag = 0  # avoid handle repeat request
@@ -110,6 +109,9 @@ class ShortestForwarding(app_manager.RyuApp):
 
             self.ilp_handle_info(max_priority, allpath.keys(), flow_identity)
             self.config_priority += 1
+            hub.sleep(2)
+        self.show_ilp_data()
+        hub.sleep(6)
 
     def ilp_handle_info(self, max_priority, flow_list, flow_info):
         '''
@@ -121,6 +123,18 @@ class ShortestForwarding(app_manager.RyuApp):
                 self.logger.info("handle flow : %s" % str(flow_info[num]))
             else:
                 self.logger.info("not handle flow : %s" % str(flow_info[num]))
+
+    def show_ilp_data(self):
+        '''
+            show the information ilp module use
+        '''
+        print '-----------require QoS flow info----------------'
+        for key, flow in self.flow.items():
+            print key, '--->', flow
+        print 'ip info (src dst)', self.flow_ip
+        print 'map info (dst_ip,inport--->src_ip)'
+        print self.map
+        print '-----------info end----------------------'
 
     @set_ev_cls(ofp_event.EventOFPStateChange,
                 [MAIN_DISPATCHER, DEAD_DISPATCHER])
@@ -388,7 +402,7 @@ class ShortestForwarding(app_manager.RyuApp):
                                   self.awareness.access_table, path,
                                   flow_info, msg.buffer_id, msg.data, 1)
 
-        self._ilp_process()
+        # self._ilp_process()
         return
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
@@ -420,19 +434,23 @@ class ShortestForwarding(app_manager.RyuApp):
     def _flow_removed_handler(self, ev):
         '''
             In flow removed handler, get the ip address and unregister in
-            the dict for require and priority.
+            the flow dict.
         '''
         self.logger.info("flow removed handler")
-        # msg = ev.msg
-        # dp = msg.datapath
-        # ofp = dp.ofproto
-        # if msg.reason == ofp.OFPRR_IDLE_TIMEOUT or msg.reason == ofp.OFPRR_HARD_TIMEOUT:
-        #     flow_dst = msg.match.get('ipv4_dst')
-        #     flow_inport = msg.match.get('in_port')
-        #     flow_ip = self.map[(flow_dst, flow_inport)]
-        #     if flow_ip in self.require.keys():
-        #         del self.require[flow_ip]
-        #         del self.priority[flow_ip]
+        msg = ev.msg
+        dp = msg.datapath
+        ofp = dp.ofproto
+        if msg.reason == ofp.OFPRR_IDLE_TIMEOUT or msg.reason == ofp.OFPRR_HARD_TIMEOUT:
+            flow_dst = msg.match.get('ipv4_dst')
+            flow_inport = msg.match.get('in_port')
+            flow_src = self.map[(flow_dst, flow_inport)]
+            for key in self.flow:
+                if (flow_src, flow_dst, flow_inport) == key[1:] and dp.id == self.flow[key][2][0]:
+                    self.logger.info("del flow info :%s" % str(self.flow[key]))
+                    del self.flow[key]
+                    self.flow_ip.remove((flow_src, flow_dst))
+                    del self.map[(flow_dst, flow_inport)]
+
 
     def reconfigration(self):
         '''
