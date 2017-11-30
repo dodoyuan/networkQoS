@@ -30,7 +30,7 @@ from ryu.lib.packet import packet
 from ryu.lib.packet import ethernet
 from ryu.lib.packet import ipv4
 from ryu.lib.packet import arp
-
+from ryu.lib import hub
 from ryu.topology import event, switches
 from ryu.topology.api import get_switch, get_link
 
@@ -68,6 +68,7 @@ class ShortestForwarding(app_manager.RyuApp):
         self.datapaths = {}
         self.weight = self.WEIGHT_MODEL[setting.WEIGHT]
         # below is data for ilp process
+        self.ilp_module_thread = hub.spawn(self._ilp_process)
         self.require = {}
         # the priority
         self.priority = {}
@@ -75,7 +76,8 @@ class ShortestForwarding(app_manager.RyuApp):
         self.flow = {}   # num(count)-->(ip_src,ip_dst,in_port)
         self.count = 1
         self.src_dst = {}
-        self.reconfig_time = 0
+        self.config_time = 0
+        self.config_flag = 0
         self.handle_flag = 0
 
     def set_weight_mode(self, weight):
@@ -86,6 +88,26 @@ class ShortestForwarding(app_manager.RyuApp):
         if self.weight == self.WEIGHT_MODEL['hop']:
             self.awareness.get_shortest_paths(weight=self.weight)
         return True
+
+    def _ilp_process(self):
+        '''
+            the entry for ilp process
+        '''
+        # if flag is 1,denote there must be congestion
+        if self.config_flag and self.handle_flag:
+            self.logger.info("enter reconfigration")
+            self.handle_flag = 0  # avoid handle repeat request
+            self.config_flag = 0
+            allpath = self.reconfigration()
+            self.logger.info("path :%s" % allpath)
+            # for flow, path in allpath.items():
+            #     flow_info = self.flow[flow]
+            #     self.install_flow(self.datapaths,
+            #                       self.awareness.link_to_port,
+            #                       self.awareness.access_table, path,
+            #                       flow_info, None, prio=self.reconfig_time)
+            hub.sleep(2)
+            self.config_time += 1
 
     @set_ev_cls(ofp_event.EventOFPStateChange,
                 [MAIN_DISPATCHER, DEAD_DISPATCHER])
@@ -344,7 +366,7 @@ class ShortestForwarding(app_manager.RyuApp):
             src_sw, dst_sw = result[0], result[1]
             if dst_sw:
                 # self.logger.info("src %s dst %s " % (src_sw, dst_sw))
-                path, reconfig_flag = self.get_path(src_sw, dst_sw, require_band, weight=self.weight)
+                path, self.config_flag = self.get_path(src_sw, dst_sw, require_band, weight=self.weight)
                 self.logger.info("[PATH]%s<-->%s: %s" % (ip_src, ip_dst, path))
                 flow_info = (eth_type, ip_src, ip_dst, in_port)
                 # install flow entries to datapath along side the path.
@@ -352,19 +374,7 @@ class ShortestForwarding(app_manager.RyuApp):
                                   self.awareness.link_to_port,
                                   self.awareness.access_table, path,
                                   flow_info, msg.buffer_id, msg.data, 1)
-        # if flag is 1,denote there must be congestion
-        if reconfig_flag and self.handle_flag:
-            self.logger.info("enter reconfigration")
-            self.handle_flag = 0  # avoid handle repeat request
-            allpath = self.reconfigration()
-            self.logger.info("path :%s" % allpath)
-            # for flow, path in allpath.items():
-            #     flow_info = self.flow[flow]
-            #     self.install_flow(self.datapaths,
-            #                       self.awareness.link_to_port,
-            #                       self.awareness.access_table, path,
-            #                       flow_info, None, prio=self.reconfig_time)
-            self.reconfig_time += 1
+
         return
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
