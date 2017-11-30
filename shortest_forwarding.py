@@ -69,14 +69,13 @@ class ShortestForwarding(app_manager.RyuApp):
         self.weight = self.WEIGHT_MODEL[setting.WEIGHT]
         # below is data for ilp process
         # self.ilp_module_thread = hub.spawn(self._ilp_process)
-        self.require = {}
-        # the priority
-        self.priority = {}
         self.map = {}
-        self.flow = {}   # num(count)-->(eth_type,ip_src,ip_dst,in_port)
+
+        self.flow = {}   # (eth_type, ip_pkt.src, ip_pkt.dst, in_port)-->
+                         # [require_band,priority,(src,dst)]
         self.flow_ip = []
         self.count = 1
-        self.src_dst = {}
+        self.src_dst = []
         self.config_priority = 2  #
         self.config_flag = 0
         self.handle_flag = 0
@@ -120,11 +119,11 @@ class ShortestForwarding(app_manager.RyuApp):
         datapath = ev.datapath
         if ev.state == MAIN_DISPATCHER:
             if not datapath.id in self.datapaths:
-                self.logger.info('register datapath: %016x', datapath.id)
+                self.logger.debug('register datapath: %016x', datapath.id)
                 self.datapaths[datapath.id] = datapath
         elif ev.state == DEAD_DISPATCHER:
             if datapath.id in self.datapaths:
-                self.logger.info('unregister datapath: %016x', datapath.id)
+                self.logger.debug('unregister datapath: %016x', datapath.id)
                 del self.datapaths[datapath.id]
 
     def add_flow(self, dp, p, match, actions, idle_timeout=0, hard_timeout=0):
@@ -136,10 +135,11 @@ class ShortestForwarding(app_manager.RyuApp):
 
         inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS,
                                              actions)]
-
+        # SET flags=ofproto.OFPFF_SEND_FLOW_REM to inform controller about flow remove
         mod = parser.OFPFlowMod(datapath=dp, priority=p,
                                 idle_timeout=idle_timeout,
                                 hard_timeout=hard_timeout,
+                                flags=ofproto.OFPFF_SEND_FLOW_REM,
                                 match=match, instructions=inst)
         dp.send_msg(mod)
 
@@ -411,16 +411,16 @@ class ShortestForwarding(app_manager.RyuApp):
             the dict for require and priority.
         '''
         self.logger.info("flow removed handler")
-        msg = ev.msg
-        dp = msg.datapath
-        ofp = dp.ofproto
-        if msg.reason == ofp.OFPRR_IDLE_TIMEOUT or msg.reason == ofp.OFPRR_HARD_TIMEOUT:
-            flow_dst = msg.match.get('ipv4_dst')
-            flow_inport = msg.match.get('in_port')
-            flow_ip = self.map[(flow_dst, flow_inport)]
-            if flow_ip in self.require.keys():
-                del self.require[flow_ip]
-                del self.priority[flow_ip]
+        # msg = ev.msg
+        # dp = msg.datapath
+        # ofp = dp.ofproto
+        # if msg.reason == ofp.OFPRR_IDLE_TIMEOUT or msg.reason == ofp.OFPRR_HARD_TIMEOUT:
+        #     flow_dst = msg.match.get('ipv4_dst')
+        #     flow_inport = msg.match.get('in_port')
+        #     flow_ip = self.map[(flow_dst, flow_inport)]
+        #     if flow_ip in self.require.keys():
+        #         del self.require[flow_ip]
+        #         del self.priority[flow_ip]
 
     def reconfigration(self):
         '''
@@ -430,22 +430,30 @@ class ShortestForwarding(app_manager.RyuApp):
         # nodes, edges, r, p, flow, capacity, src_dst
         switch = self.awareness.switches
         edges = self.awareness.edges
-        flow = self.flow.keys()
         capacity = setting.link_capacity
-        src_dst = self.src_dst
+        src_dst, flow = [], []
+        require, priority = [], []
+        # (eth_type, ip_pkt.src, ip_pkt.dst, in_port)-->
+        # [require_band,priority,(src_dp,dst_dp)]
+        for key, value in self.flow:
+            flow.append(key)
+            require.append(value[0])
+            priority.append(value[1])
+            src_dst.append(value[2])
 
-        self.logger.debug('not enough bandwidth ILP enter')
-        self.logger.debug("flow info: %s" % self.flow)
-        self.logger.debug("require info: %s" % self.require)
-        self.logger.debug("priority info: %s" % self.priority)
-        self.logger.debug("src_dst info: %s" % self.src_dst)
-        self.logger.debug("switch info: %s" % switch)
-        self.logger.debug("edge info: %s" % edges)
-        self.logger.debug("capacity info: %s" % capacity)
+        self.logger.info('not enough bandwidth ILP enter')
+        self.logger.info("flow info: %s" % flow)
+        self.logger.info("require info: %s" % require)
+        self.logger.info("priority info: %s" % priority)
+        self.logger.info("src_dst info: %s" % src_dst)
+        self.logger.info("switch info: %s" % switch)
+        self.logger.info("edge info: %s" % edges)
+        self.logger.info("capacity info: %s" % capacity)
 
+        flow_num = range(len(flow))
         assert len(flow) == len(src_dst)
-        path = milp_constrains(switch, edges, self.require, self.priority,
-                               flow, capacity, src_dst)
+        path, max_priority = milp_constrains(switch, edges, require, priority,
+                               flow_num, capacity, src_dst)
         return path
 
     def ilp_data_handle(self, ip_pkt, eth_type, datapath_id, require_band):
@@ -459,14 +467,17 @@ class ShortestForwarding(app_manager.RyuApp):
                 self.logger.debug("ip_src: %s,ip_dst: %s,in_port: %s" % (ip_pkt.src, ip_pkt.dst, in_port))
                 self.logger.debug("count:%s" % self.count)
                 self.handle_flag = 1   # this is new flow, can handle with ilp module
-                self.flow[self.count] = (eth_type, ip_pkt.src, ip_pkt.dst, in_port)
-                self.flow_ip.append((ip_pkt.src, ip_pkt.dst))
-                self.require[self.count] = require_band
-                self.priority[self.count] = setting.priority_weight[ip_pkt.src]
-                self.map[(ip_pkt.dst, in_port)] = ip_pkt.src
 
                 result = self.get_sw(datapath_id, in_port, ip_pkt.src, ip_pkt.dst)
-                self.src_dst[self.count] = (result[0], result[1])
+                flow_info = []
+                flow_info.append(require_band)
+                flow_info.append(setting.priority_weight[ip_pkt.src])
+                flow_info.append((result[0], result[1]))
+                # (eth_type, ip_pkt.src, ip_pkt.dst, in_port)--> [require_band,priority,(src_dp,dst_dp)]
+                self.flow[(eth_type, ip_pkt.src, ip_pkt.dst, in_port)] = flow_info
+                self.flow_ip.append((ip_pkt.src, ip_pkt.dst))
+
+                self.map[(ip_pkt.dst, in_port)] = ip_pkt.src
                 self.count += 1  # flow identification
                 # assert self.count < 10
 

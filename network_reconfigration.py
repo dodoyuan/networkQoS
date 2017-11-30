@@ -51,6 +51,17 @@ def neighbor_tail(node, edges):
 
 # @exeTime
 def milp_constrains(nodes, edges, r, p, flow, capacity, src_dst):
+    '''
+
+    :param nodes: []
+    :param edges: [()]
+    :param r: []
+    :param p: []
+    :param flow:[0,1,2]
+    :param capacity: int
+    :param src_dst: [()]
+    :return:
+    '''
     s, d = gene_matrix(nodes, src_dst)
     model = pulp.LpProblem("suitable path for higher priority", pulp.LpMaximize)
     y = pulp.LpVariable.dicts("handle this flow or not", flow, 0, 1, cat='Binary')
@@ -94,7 +105,7 @@ def milp_constrains(nodes, edges, r, p, flow, capacity, src_dst):
     # print path
     #  {1: {1: 5, 5: 6, 6: 7, 7: 8}, 2: {1: 2, 2: 3, 3: 4, 4: 8}}
     path = path_extr(src_dst, path)
-    return path
+    return path, max_priority
 
 
 def path_extr(src_dst,path):
@@ -115,7 +126,7 @@ def path_extr(src_dst,path):
 def gene_matrix(nodes, src_dst):
     source_matrix = defaultdict(lambda: [0 for _ in range(len(nodes) + 1)])
     des_matrix = defaultdict(lambda: [0 for _ in range(len(nodes) + 1)])
-    for key, value in src_dst.items():
+    for key, value in enumerate(src_dst, 0):
         source_matrix[key][value[0]] = 1
         des_matrix[key][value[1]] = 1
     return source_matrix, des_matrix
