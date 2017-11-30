@@ -337,7 +337,7 @@ class ShortestForwarding(app_manager.RyuApp):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
-        reconfig_flag,= 0
+        reconfig_flag = 0
 
         result = self.get_sw(datapath.id, in_port, ip_src, ip_dst)
         if result:
