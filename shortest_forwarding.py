@@ -430,18 +430,19 @@ class ShortestForwarding(app_manager.RyuApp):
         '''
            generating the data for ilp module
         '''
-        # avoid repeat packet-in packet to controller
-        self.logger.info("ip_src: %s,ip_dst: %s,in_port: %s" % (ip_pkt.src, ip_pkt.dst, in_port))
-        self.logger.info("count:%s" % self.count)
-        # for simplification, use (ip_pkt.src, ip_pkt.src)
-        # identification of a flow
-        self.flow[self.count] = (ip_pkt.src, ip_pkt.dst)
-        self.require[self.count] = require_band
-        self.priority[self.count] = setting.priority_weight[ip_pkt.src]
-        self.map[(ip_pkt.dst, in_port)] = ip_pkt.src
+        # avoid reverse packet-in packet to controller
+        if (ip_pkt.dst, ip_pkt.src) not in self.flow.values():
+            self.logger.info("ip_src: %s,ip_dst: %s,in_port: %s" % (ip_pkt.src, ip_pkt.dst, in_port))
+            self.logger.info("count:%s" % self.count)
+            # for simplification, use (ip_pkt.src, ip_pkt.src)
+            # identification of a flow
+            self.flow[self.count] = (ip_pkt.src, ip_pkt.dst)
+            self.require[self.count] = require_band
+            self.priority[self.count] = setting.priority_weight[ip_pkt.src]
+            self.map[(ip_pkt.dst, in_port)] = ip_pkt.src
 
-        result = self.get_sw(datapath_id, in_port, ip_pkt.src, ip_pkt.dst)
-        self.src_dst[self.count] = (result[0], result[1])
+            result = self.get_sw(datapath_id, in_port, ip_pkt.src, ip_pkt.dst)
+            self.src_dst[self.count] = (result[0], result[1])
         self.count += 1  # flow identification
         # assert self.count < 10
 

@@ -143,8 +143,10 @@ class NetworkAwareness(app_manager.RyuApp):
                 elif (src, dst) in link_list:
                     self.graph.add_edge(src, dst, weight=1)
                     # add a data for ilp module
-                    self.edges.append((src, dst))
-                    self.edges.append((dst, src))
+                    if (src, dst) not in self.edges:
+                        self.edges.append((src, dst))
+                    if (dst, src) not in self.edges:
+                        self.edges.append((dst, src))
         return self.graph
 
     # 通过交换机实例获取到端口，并创建数据结构
