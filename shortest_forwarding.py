@@ -128,7 +128,7 @@ class ShortestForwarding(app_manager.RyuApp):
             in_port=flow_info[3], eth_type=flow_info[0],
             ipv4_src=flow_info[1], ipv4_dst=flow_info[2])
 
-        inst = [parser.OFPInstructionActions(ofproto.OFPIT_CLEAR_ACTIONS)]
+        inst = [parser.OFPInstructionActions(ofproto.OFPIT_CLEAR_ACTIONS, [])]
         mod = parser.OFPFlowMod(datapath=datapath, priority=prio,
                                 idle_timeout=15,
                                 hard_timeout=60,
