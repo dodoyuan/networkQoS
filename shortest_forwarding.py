@@ -100,26 +100,41 @@ class ShortestForwarding(app_manager.RyuApp):
             self.config_flag = 0
             allpath, flow_identity, max_priority = self.reconfigration()
             self.logger.info("path :%s" % allpath)
-            for flow_num, path in allpath.items():
-                flow_info = flow_identity[flow_num]
-                self.install_flow(self.datapaths,
-                                  self.awareness.link_to_port,
-                                  self.awareness.access_table, path,
-                                  flow_info, None, prio=self.config_priority)
+            self.logger.info("the max priority weight is: %d" % max_priority)
+            for num in range(len(flow_identity)):
+                if num in allpath.keys():
+                    self.logger.info("handle flow : %s" % str(flow_identity[num]))
+                    flow_info = flow_identity[num]
+                    self.install_flow(self.datapaths,
+                                      self.awareness.link_to_port,
+                                      self.awareness.access_table, allpath[num],
+                                      flow_info, None, prio=self.config_priority)
 
-            self.ilp_handle_info(max_priority, allpath.keys(), flow_identity)
+                else:
+                    self.logger.info("not handle flow : %s" % str(flow_identity[num]))
+                    # sent flow delete flow table
+                    self.add_drop_flow(flow_identity[num], self.config_priority)
             self.config_priority += 1
 
-    def ilp_handle_info(self, max_priority, flow_list, flow_info):
+    def add_drop_flow(self, flow_info, prio):
         '''
-           use to inform which flow handle,and which not
+
         '''
-        self.logger.info("the max priority weight is: %d" % max_priority)
-        for num in range(len(flow_info)):
-            if num in flow_list:
-                self.logger.info("handle flow : %s" % str(flow_info[num]))
-            else:
-                self.logger.info("not handle flow : %s" % str(flow_info[num]))
+        dp_id = self.flow[flow_info][2][0]
+        datapath = self.datapaths[dp_id]
+        ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+        match = parser.OFPMatch(
+            in_port=flow_info[3], eth_type=flow_info[0],
+            ipv4_src=flow_info[1], ipv4_dst=flow_info[2])
+
+        inst = [parser.OFPInstructionActions(ofproto.OFPIT_CLEAR_ACTIONS)]
+        mod = parser.OFPFlowMod(datapath=datapath, priority=prio,
+                                idle_timeout=15,
+                                hard_timeout=60,
+                                flags=ofproto.OFPFF_SEND_FLOW_REM,
+                                match=match, instructions=inst)
+        datapath.send_msg(mod)
 
     def show_ilp_data(self):
         '''
@@ -447,14 +462,13 @@ class ShortestForwarding(app_manager.RyuApp):
                     del self.flow[key]
                     self.flow_ip.remove((flow_src, flow_dst))
                     del self.map[(flow_dst, flow_inport)]
+                    self.count -= 1
                     self.show_ilp_data()
 
     def reconfigration(self):
         '''
            handle the network re-configration. calling the ilp module
         '''
-
-        # nodes, edges, r, p, flow, capacity, src_dst
         switch = self.awareness.switches
         edges = self.awareness.edges
         capacity = setting.link_capacity
@@ -467,15 +481,14 @@ class ShortestForwarding(app_manager.RyuApp):
             require.append(value[0])
             priority.append(value[1])
             src_dst.append(value[2])
-
-        self.logger.info('not enough bandwidth ILP enter')
-        self.logger.info("flow info: %s" % flow)
-        self.logger.info("require info: %s" % require)
-        self.logger.info("priority info: %s" % priority)
-        self.logger.info("src_dst info: %s" % src_dst)
-        self.logger.info("switch info: %s" % switch)
-        self.logger.info("edge info: %s" % edges)
-        self.logger.info("capacity info: %s" % capacity)
+        # self.logger.info('not enough bandwidth ILP enter')
+        # self.logger.info("flow info: %s" % flow)
+        # self.logger.info("require info: %s" % require)
+        # self.logger.info("priority info: %s" % priority)
+        # self.logger.info("src_dst info: %s" % src_dst)
+        # self.logger.info("switch info: %s" % switch)
+        # self.logger.info("edge info: %s" % edges)
+        # self.logger.info("capacity info: %s" % capacity)
 
         flow_num = range(len(flow))
         assert len(flow) == len(src_dst)
