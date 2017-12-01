@@ -70,7 +70,6 @@ class ShortestForwarding(app_manager.RyuApp):
         # below is data for ilp process
 
         # self.ilp_module_thread = hub.spawn(self._ilp_process)
-        self.map = defaultdict(str)
         self.flow = defaultdict(list)   # (eth_type, ip_pkt.src, ip_pkt.dst, in_port)-->
                                         # [require_band,priority,(src,dst)]
         self.flow_ip = []
@@ -144,8 +143,6 @@ class ShortestForwarding(app_manager.RyuApp):
         for key, flow in self.flow.items():
             print key, '--->', flow
         print 'ip info (src dst)', self.flow_ip
-        print 'map info (dst_ip,inport--->src_ip)'
-        print self.map
         print '-----------info end----------------------'
 
     @set_ev_cls(ofp_event.EventOFPStateChange,
@@ -454,14 +451,13 @@ class ShortestForwarding(app_manager.RyuApp):
         ofp = dp.ofproto
         if msg.reason == ofp.OFPRR_IDLE_TIMEOUT or msg.reason == ofp.OFPRR_HARD_TIMEOUT:
             flow_dst = msg.match.get('ipv4_dst')
+            flow_src = msg.match.get('ipv4_src')
             flow_inport = msg.match.get('in_port')
-            flow_src = self.map[(flow_dst, flow_inport)]
             for key, value in self.flow.items():
                 if (flow_src, flow_dst, flow_inport) == key[1:] and dp.id == value[2][0]:
                     self.logger.info("del flow info :%s" % str(key))
                     del self.flow[key]
                     self.flow_ip.remove((flow_src, flow_dst))
-                    del self.map[(flow_dst, flow_inport)]
                     self.count -= 1
                     self.show_ilp_data()
 
@@ -505,8 +501,8 @@ class ShortestForwarding(app_manager.RyuApp):
         if (ip_pkt.dst, ip_pkt.src) not in self.flow_ip:
             if (ip_pkt.src, ip_pkt.dst) not in self.flow_ip:
                 in_port = self.get_port(ip_pkt.src, self.awareness.access_table)
-                self.logger.debug("ip_src: %s,ip_dst: %s,in_port: %s" % (ip_pkt.src, ip_pkt.dst, in_port))
-                self.logger.debug("count:%s" % self.count)
+                self.logger.info("ilpdata ip_src: %s,ip_dst: %s,in_port: %s" % (ip_pkt.src, ip_pkt.dst, in_port))
+                self.logger.info("count:%s" % self.count)
                 self.handle_flag = 1   # this is new flow, can handle with ilp module
 
                 result = self.get_sw(datapath_id, in_port, ip_pkt.src, ip_pkt.dst)
@@ -517,8 +513,6 @@ class ShortestForwarding(app_manager.RyuApp):
                 # (eth_type, ip_pkt.src, ip_pkt.dst, in_port)--> [require_band,priority,(src_dp,dst_dp)]
                 self.flow[(eth_type, ip_pkt.src, ip_pkt.dst, in_port)] = flow_info
                 self.flow_ip.append((ip_pkt.src, ip_pkt.dst))
-
-                self.map[(ip_pkt.dst, in_port)] = ip_pkt.src
                 self.show_ilp_data()
                 self.count += 1  # flow identification
                 # assert self.count < 10
