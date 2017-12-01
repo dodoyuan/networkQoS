@@ -141,8 +141,8 @@ class NetworkMonitor(app_manager.RyuApp):
                     return path, reconf_flag
                 bw_guaranteed_paths = path
 
-        # return bw_guaranteed_paths, reconf_flag
-        return bw_guaranteed_paths, 0
+        return bw_guaranteed_paths, reconf_flag
+        # return bw_guaranteed_paths, 0
 
     def create_bw_graph(self, bw_dict):
         """
