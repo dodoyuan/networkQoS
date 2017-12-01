@@ -33,8 +33,8 @@ WEIGHT = 'bw'
 
 # predefined requirement band-with of each source IP
 require_band = {"10.0.0.1": 4, "10.0.0.2": 8, "10.0.0.3": 5,
-                "10.0.0.4": 3, "10.0.0.5": 1, "10.0.0.6": 1}
+                "10.0.0.4": 3}
 
 # predefined priority of each source IP
 priority_weight = {"10.0.0.1": 16, "10.0.0.2": 8, "10.0.0.3": 4,
-                   "10.0.0.4": 2,  "10.0.0.5": 2,  "10.0.0.6": 1}
+                   "10.0.0.4": 2}

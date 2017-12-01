@@ -393,8 +393,8 @@ class ShortestForwarding(app_manager.RyuApp):
 
         """
         datapath = msg.datapath
-        ofproto = datapath.ofproto
-        parser = datapath.ofproto_parser
+        # ofproto = datapath.ofproto
+        # parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
 
         result = self.get_sw(datapath.id, in_port, ip_src, ip_dst)
@@ -434,9 +434,11 @@ class ShortestForwarding(app_manager.RyuApp):
         if isinstance(ip_pkt, ipv4.ipv4):
             self.logger.debug("IPV4 processing")
             if len(pkt.get_protocols(ethernet.ethernet)):
-                require_band = setting.require_band[ip_pkt.src]
                 eth_type = pkt.get_protocols(ethernet.ethernet)[0].ethertype
-                self.ilp_data_handle(ip_pkt, eth_type, datapath.id, require_band)
+                require_band = 0  # no QoS require data
+                if ip_pkt.src in setting.require_band.keys():
+                    require_band = setting.require_band[ip_pkt.src]
+                    self.ilp_data_handle(ip_pkt, eth_type, datapath.id, require_band)
                 self.shortest_forwarding(msg, eth_type, ip_pkt.src, ip_pkt.dst, require_band)
 
     @set_ev_cls(ofp_event.EventOFPFlowRemoved, MAIN_DISPATCHER)
