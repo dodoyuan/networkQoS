@@ -15,6 +15,9 @@ MAX_CAPACITY = 281474976710655L  # Max capacity of link
 def get_link_capacity(dpid, port, return_matrix_flag):
     link_capacity = defaultdict(lambda: defaultdict(lambda: 10))
     link_capacity[8][1] = 100
+    link_capacity[8][2] = 100
+    link_capacity[8][3] = 100
+    link_capacity[8][4] = 100
     link_capacity[1][1] = 100
     link_capacity[1][2] = 100
     link_capacity[1][3] = 100
