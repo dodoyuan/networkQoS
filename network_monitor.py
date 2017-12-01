@@ -175,7 +175,7 @@ class NetworkMonitor(app_manager.RyuApp):
         port_state = 1  # TODO creat map with port status
         if port_state:
             # get link capacity from map of each link capacity
-            capacity = setting.get_link_capacity(dpid, port_no)
+            capacity = setting.get_link_capacity(dpid, port_no, 0)
             # bandwidth Mbps
             curr_bw = self._get_free_bw(capacity, speed)
             self.free_bandwidth[dpid].setdefault(port_no, None)

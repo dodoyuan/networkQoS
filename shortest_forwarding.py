@@ -471,7 +471,8 @@ class ShortestForwarding(app_manager.RyuApp):
         '''
         switch = self.awareness.switches
         edges = self.awareness.edges
-        capacity = setting.link_capacity
+        port_capacity_matrix = setting.get_link_capacity(0, 0, 1)
+        link_capacity_matrix = self.link_capacity_maxtrix(edges, port_capacity_matrix)
         src_dst, flow = [], []
         require, priority = [], []
         # (eth_type, ip_pkt.src, ip_pkt.dst, in_port)-->
@@ -493,7 +494,7 @@ class ShortestForwarding(app_manager.RyuApp):
         flow_num = range(len(flow))
         assert len(flow) == len(src_dst)
         path, max_priority = milp_constrains(switch, edges, require, priority,
-                               flow_num, capacity, src_dst)
+                               flow_num, link_capacity_matrix, src_dst)
         return path, flow, max_priority
 
     def ilp_data_handle(self, ip_pkt, eth_type, datapath_id, require_band):
@@ -522,3 +523,13 @@ class ShortestForwarding(app_manager.RyuApp):
                 self.count += 1  # flow identification
                 # assert self.count < 10
 
+    def link_capacity_maxtrix(self, edges, port_capacity):
+        '''
+            create the link capacity based on port_capacity
+        '''
+        link_capacity = defaultdict(int)
+        for edge in edges:
+            sw1, sw2 = edge[0], edge[1]
+            ports = self.awareness.link_to_port[edge]
+            link_capacity[edge] = port_capacity[sw1][ports[0]]
+        return link_capacity

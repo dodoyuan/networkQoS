@@ -49,6 +49,7 @@ def neighbor_tail(node, edges):
             linked_edges.append(e)
     return linked_edges
 
+
 # @exeTime
 def milp_constrains(nodes, edges, r, p, flow, capacity, src_dst):
     '''
@@ -79,7 +80,7 @@ def milp_constrains(nodes, edges, r, p, flow, capacity, src_dst):
             #          pulp.lpSum(u[(n, edge)] for edge in neighbor_tail(m)) <= 1
 
     for edge in edges:
-        model += pulp.lpSum(r[n] * u[(n, edge)] for n in flow) <= capacity
+        model += pulp.lpSum(r[n] * u[(n, edge)] for n in flow) <= capacity[edge]
 
     for n in flow:
         for edge in edges:
