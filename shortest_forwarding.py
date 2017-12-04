@@ -98,21 +98,27 @@ class ShortestForwarding(app_manager.RyuApp):
             self.handle_flag = 0  # avoid handle repeat request
             self.config_flag = 0
             allpath, flow_identity, max_priority = self.reconfigration()
-            self.logger.info("path :%s" % allpath)
+            self.logger.info("new path for high priority data :%s" % allpath)
             self.logger.info("the max priority weight is: %d" % max_priority)
             for num in range(len(flow_identity)):
+                flow_info = flow_identity[num]
                 if num in allpath.keys():
                     self.logger.info("handle flow : %s" % str(flow_identity[num]))
-                    flow_info = flow_identity[num]
                     self.install_flow(self.datapaths,
                                       self.awareness.link_to_port,
                                       self.awareness.access_table, allpath[num],
-                                      flow_info, None, prio=self.config_priority)
+                                      flow_info, None, prio=self.config_priority, set_queue=0)
 
                 else:
                     self.logger.info("not handle flow : %s" % str(flow_identity[num]))
-                    # sent flow delete flow table
-                    self.add_drop_flow(flow_identity[num], self.config_priority)
+                    # for not handle flow,find a new path with most bandwidth
+                    flow = self.flow[flow_info]
+                    path, _ = self.get_path(flow[2][0], flow[2][1], flow[0], weight=self.weight)
+                    self.logger.info("flow %s path %s" % (flow_info, path))
+                    self.install_flow(self.datapaths,
+                                      self.awareness.link_to_port,
+                                      self.awareness.access_table, path,
+                                      flow_info, None, prio=self.config_priority, set_queue=1)
             self.config_priority += 1
 
     def add_drop_flow(self, flow_info, prio):
@@ -178,12 +184,12 @@ class ShortestForwarding(app_manager.RyuApp):
                                 match=match, instructions=inst)
         dp.send_msg(mod)
 
-    def send_flow_mod(self, datapath, flow_info, src_port, dst_port, prio=1):
+    def send_flow_mod(self, datapath, flow_info, src_port, dst_port, prio=1, queue_num=2):
         """
             Build flow entry, and send it to datapath.
         """
         parser = datapath.ofproto_parser
-        actions = []
+        actions = [parser.OFPActionSetQueue(queue_num)]
         actions.append(parser.OFPActionOutput(dst_port))
 
         match = parser.OFPMatch(
@@ -319,7 +325,7 @@ class ShortestForwarding(app_manager.RyuApp):
         return src_sw, dst_sw
 
     def install_flow(self, datapaths, link_to_port, access_table, path,
-                     flow_info, buffer_id, data=None, prio=1):
+                     flow_info, buffer_id, data=None, prio=1, set_queue=2):
         '''
             Install flow entires for roundtrip: go and back.
             @parameter: path=[dpid1, dpid2...]
@@ -343,8 +349,8 @@ class ShortestForwarding(app_manager.RyuApp):
                 if port and port_next:
                     src_port, dst_port = port[1], port_next[0]
                     datapath = datapaths[path[i]]
-                    self.send_flow_mod(datapath, flow_info, src_port, dst_port, prio)
-                    self.send_flow_mod(datapath, back_info, dst_port, src_port, prio)
+                    self.send_flow_mod(datapath, flow_info, src_port, dst_port, prio, set_queue)
+                    self.send_flow_mod(datapath, back_info, dst_port, src_port, prio, set_queue)
                     self.logger.debug("inter_link flow install")
         if len(path) > 1:
             # the last flow entry: tor -> host
@@ -361,8 +367,8 @@ class ShortestForwarding(app_manager.RyuApp):
                 return
 
             last_dp = datapaths[path[-1]]
-            self.send_flow_mod(last_dp, flow_info, src_port, dst_port, prio)
-            self.send_flow_mod(last_dp, back_info, dst_port, src_port, prio)
+            self.send_flow_mod(last_dp, flow_info, src_port, dst_port, prio, set_queue)
+            self.send_flow_mod(last_dp, back_info, dst_port, src_port, prio, set_queue)
 
             # the first flow entry
             port_pair = self.get_port_pair_from_link(link_to_port,
@@ -371,8 +377,8 @@ class ShortestForwarding(app_manager.RyuApp):
                 self.logger.info("Port not found in first hop.")
                 return
             out_port = port_pair[0]
-            self.send_flow_mod(first_dp, flow_info, in_port, out_port, prio)
-            self.send_flow_mod(first_dp, back_info, out_port, in_port, prio)
+            self.send_flow_mod(first_dp, flow_info, in_port, out_port, prio, set_queue)
+            self.send_flow_mod(first_dp, back_info, out_port, in_port, prio, set_queue)
             if prio == 1:
                 self.send_packet_out(first_dp, buffer_id, in_port, out_port, data)
 
@@ -382,12 +388,12 @@ class ShortestForwarding(app_manager.RyuApp):
             if out_port is None:
                 self.logger.info("Out_port is None in same dp")
                 return
-            self.send_flow_mod(first_dp, flow_info, in_port, out_port, prio)
-            self.send_flow_mod(first_dp, back_info, out_port, in_port, prio)
+            self.send_flow_mod(first_dp, flow_info, in_port, out_port, prio, set_queue)
+            self.send_flow_mod(first_dp, back_info, out_port, in_port, prio, set_queue)
             if prio == 1:
                 self.send_packet_out(first_dp, buffer_id, in_port, out_port, data)
 
-    def shortest_forwarding(self, msg, eth_type, ip_src, ip_dst, require_band):
+    def shortest_forwarding(self, msg, eth_type, ip_src, ip_dst, require_band, set_queue):
         """
             To calculate shortest forwarding path and install them into datapaths.
 
@@ -409,7 +415,7 @@ class ShortestForwarding(app_manager.RyuApp):
                 self.install_flow(self.datapaths,
                                   self.awareness.link_to_port,
                                   self.awareness.access_table, path,
-                                  flow_info, msg.buffer_id, msg.data, 1)
+                                  flow_info, msg.buffer_id, msg.data, 1, set_queue)
 
         self._ilp_process()
         return
@@ -436,12 +442,14 @@ class ShortestForwarding(app_manager.RyuApp):
             if len(pkt.get_protocols(ethernet.ethernet)):
                 eth_type = pkt.get_protocols(ethernet.ethernet)[0].ethertype
                 require_band = 0  # no QoS require data
-                if ip_pkt.src in setting.require_band.keys():
+                set_queue = 2
+                if ip_pkt.src in setting.require_band.keys():  # QoS data
                     require_band = setting.require_band[ip_pkt.src]
+                    set_queue = 0
                     self.ilp_data_handle(ip_pkt, eth_type, datapath.id, require_band)
-                self.shortest_forwarding(msg, eth_type, ip_pkt.src, ip_pkt.dst, require_band)
+                self.shortest_forwarding(msg, eth_type, ip_pkt.src, ip_pkt.dst, require_band, set_queue)
 
-    @set_ev_cls(ofp_event.EventOFPFlowRemoved, MAIN_DISPATCHER)
+    # @set_ev_cls(ofp_event.EventOFPFlowRemoved, MAIN_DISPATCHER)
     def _flow_removed_handler(self, ev):
         '''
             In flow removed handler, get the ip address and unregister in
@@ -505,7 +513,7 @@ class ShortestForwarding(app_manager.RyuApp):
                 in_port = self.get_port(ip_pkt.src, self.awareness.access_table)
                 self.logger.info("ilpdata ip_src: %s,ip_dst: %s,in_port: %s" % (ip_pkt.src, ip_pkt.dst, in_port))
                 self.logger.info("count:%s" % self.count)
-                self.handle_flag = 1   # this is new flow, can handle with ilp module
+                self.handle_flag = 1   # this is new QoS flow, can handle with ilp module
 
                 result = self.get_sw(datapath_id, in_port, ip_pkt.src, ip_pkt.dst)
                 flow_info = []
