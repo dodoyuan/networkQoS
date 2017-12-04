@@ -113,7 +113,7 @@ class ShortestForwarding(app_manager.RyuApp):
                     self.logger.info("not handle flow : %s" % str(flow_identity[num]))
                     # for not handle flow,find a new path with most bandwidth
                     flow = self.flow[flow_info]
-                    path, _ = self.get_path(flow[2][0], flow[2][1], flow[0], weight=self.weight)
+                    path, _ = self.get_path(flow[2][0], flow[2][1], 0, weight=self.weight)
                     self.logger.info("flow %s path %s" % (flow_info, path))
                     self.install_flow(self.datapaths,
                                       self.awareness.link_to_port,
