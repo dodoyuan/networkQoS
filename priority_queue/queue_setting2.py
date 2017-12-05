@@ -50,7 +50,7 @@ for prt in ports:
             prts.append(prt)
 
 for sw in switches:
-    cmd = "ovs-vsctl set Bridge %s protocols = OpenFlow13" % sw
+    cmd = "ovs-vsctl set Bridge %s protocols=OpenFlow13" % sw
     q_res = os.popen(cmd).read()
 
 for port in prts:
