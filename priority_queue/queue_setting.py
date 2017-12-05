@@ -79,7 +79,7 @@ for sw in switches:
     queuecmd = "sudo ovs-vsctl %s " \
                "-- --id=@defaultqos create qos type=linux-htb other-config:max-rate=12000000 queues=0=@q0,1=@q1,2=@q2 " \
                "-- --id=@q0 create queue other-config:min-rate=8000000 other-config:max-rate=8000000 " \
-               "-- --id=@q1 create queue other-config:min-rate=4000000 other-config:max-rate=8000000 " \
+               "-- --id=@q1 create queue other-config:min-rate=3000000 other-config:max-rate=3000000 " \
                "-- --id=@q2 create queue other-config:min-rate=0 other-config:max-rate=12000000 " % config_strings[sw]
     print 'exec cmd %s', queuecmd
     q_res = os.popen(queuecmd).read()
