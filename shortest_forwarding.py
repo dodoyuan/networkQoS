@@ -189,7 +189,8 @@ class ShortestForwarding(app_manager.RyuApp):
             Build flow entry, and send it to datapath.
         """
         parser = datapath.ofproto_parser
-        actions = [parser.OFPActionSetQueue(queue_num)]
+        actions = []
+        actions.append(parser.OFPActionSetQueue(queue_num))
         actions.append(parser.OFPActionOutput(dst_port))
 
         match = parser.OFPMatch(
