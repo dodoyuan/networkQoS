@@ -36,7 +36,7 @@ print brdgs
 
 switches = []
 for bn in brdgs:
-    sw =  p[(bn+8):(bn+10)]
+    sw = p[(bn+8):(bn+10)]
     switches.append(sw)
 
 ports = find_all(p, "Port")
@@ -62,7 +62,7 @@ for i in range(len(switches)):
         #verify correct order
         if switches[i] in prts[n]:
             port_name = prts[n]
-            str = str+" -- set port %s qos=@defaultqos" % port_name
+            str += " -- set port %s qos=@defaultqos" % port_name
     config_strings[sw] = str
 
 # for sw in switches:
@@ -80,7 +80,7 @@ for sw in switches:
                "-- --id=@defaultqos create qos type=linux-htb other-config:max-rate=12000000 queues=0=@q0,1=@q1,2=@q2 " \
                "-- --id=@q0 create queue other-config:min-rate=8000000 other-config:max-rate=8000000 " \
                "-- --id=@q1 create queue other-config:min-rate=3000000 other-config:max-rate=3000000 " \
-               "-- --id=@q2 create queue other-config:min-rate=0 other-config:max-rate=12000000 " % config_strings[sw]
+               "-- --id=@q2 create queue other-config:min-rate=0 other-config:max-rate=10000000 " % config_strings[sw]
     print 'exec cmd %s', queuecmd
     q_res = os.popen(queuecmd).read()
     # print q_res

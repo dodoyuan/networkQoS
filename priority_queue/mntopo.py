@@ -7,7 +7,7 @@ from mininet.link import TCLink
 
 if '__main__' == __name__:
 
-    net = Mininet(controller=RemoteController,link=TCLink)
+    net = Mininet(controller=RemoteController, link=TCLink)
     c0 = net.addController('c0', port=6633)
     s1 = net.addSwitch('s1')
     s2 = net.addSwitch('s2')
