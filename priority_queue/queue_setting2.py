@@ -49,6 +49,9 @@ for prt in ports:
             print prt
             prts.append(prt)
 
+for sw in switches:
+    cmd = "ovs-vsctl set Bridge %s protocols = OpenFlow13" % sw
+    q_res = os.popen(cmd).read()
 
 for port in prts:
     queuecmd = "sudo ovs-vsctl -- set port %s qos=@defaultqos " \
