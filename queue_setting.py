@@ -75,7 +75,7 @@ class QueueSetting():
                        "-- --id=@defaultqos create qos type=linux-htb other-config:max-rate=12000000 queues=0=@q0,1=@q1,2=@q2 " \
                        "-- --id=@q0 create queue other-config:priority=1 " \
                        "-- --id=@q1 create queue other-config:priority=10 " \
-                       "-- --id=@q2 create queue other-config:priority=100 " % port
+                       "-- --id=@q2 create queue other-config:priority=20 " % port
             print 'exec cmd:', queuecmd
             q_res = os.popen(queuecmd).read()
 
@@ -85,17 +85,17 @@ class QueueSetting():
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         print 'error occur, p for priority queue and ' \
               'b for bandwidth guarantee queue' \
               'd for delete the setting'
 
-    if sys.argv[2] in 'pbd':
+    if sys.argv[1] in 'pbd':
         queue = QueueSetting()
         queue.isroot()
-        if sys.argv[2] == 'p':
+        if sys.argv[1] == 'p':
             queue.set_priority_queue()
-        if sys.argv[2] == 'b':
+        if sys.argv[1] == 'b':
             queue.set_bandwidth_queue()
-        if sys.argv[2] == 'd':
+        if sys.argv[1] == 'd':
             queue.del_queue()
