@@ -148,7 +148,7 @@ class ShortestForwarding(app_manager.RyuApp):
         self.logger.info('-----------require QoS flow info----------------')
         for key, flow in self.flow.items():
             self.logger.info("key:%s '--->'flow:%s" % (key, flow))
-            self.logger.info('ip info (src dst): %s' % self.flow_ip) 
+            self.logger.info('ip info (src dst): %s' % self.flow_ip)
         self.logger.info('-----------info end----------------------')
 
     @set_ev_cls(ofp_event.EventOFPStateChange,
@@ -418,7 +418,7 @@ class ShortestForwarding(app_manager.RyuApp):
                                   self.awareness.access_table, path,
                                   flow_info, msg.buffer_id, msg.data, 1, set_queue)
 
-        self._ilp_process()
+        # self._ilp_process()
         return
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
@@ -447,7 +447,7 @@ class ShortestForwarding(app_manager.RyuApp):
                 if ip_pkt.src in setting.require_band.keys():  # QoS data
                     require_band = setting.require_band[ip_pkt.src]
                     set_queue = 0
-                    self.ilp_data_handle(ip_pkt, eth_type, datapath.id, require_band)
+                    # self.ilp_data_handle(ip_pkt, eth_type, datapath.id, require_band)
                 self.shortest_forwarding(msg, eth_type, ip_pkt.src, ip_pkt.dst, require_band, set_queue)
 
     # @set_ev_cls(ofp_event.EventOFPFlowRemoved, MAIN_DISPATCHER)
