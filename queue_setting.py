@@ -57,7 +57,7 @@ class QueueSetting():
             q_res = os.popen(cmd).read()
         for port in ports:
             queuecmd = "sudo ovs-vsctl -- set port %s qos=@defaultqos " \
-                       "-- --id=@defaultqos create qos type=linux-htb other-config:max-rate=11000000 queues=0=@q0,1=@q1,2=@q2 " \
+                       "-- --id=@defaultqos create qos type=linux-htb other-config:max-rate=10500000 queues=0=@q0,1=@q1,2=@q2 " \
                        "-- --id=@q0 create queue other-config:min-rate=8000000 other-config:max-rate=8000000 " \
                        "-- --id=@q1 create queue other-config:min-rate=3000000 other-config:max-rate=4000000 " \
                        "-- --id=@q2 create queue other-config:min-rate=0 other-config:max-rate=10000000 " % port
@@ -72,7 +72,7 @@ class QueueSetting():
             q_res = os.popen(cmd).read()
         for port in ports:
             queuecmd = "sudo ovs-vsctl -- set port %s qos=@defaultqos " \
-                       "-- --id=@defaultqos create qos type=linux-htb other-config:max-rate=11000000 queues=0=@q0,1=@q1,2=@q2 " \
+                       "-- --id=@defaultqos create qos type=linux-htb other-config:max-rate=10500000 queues=0=@q0,1=@q1,2=@q2 " \
                        "-- --id=@q0 create queue other-config:priority=1 " \
                        "-- --id=@q1 create queue other-config:priority=10 " \
                        "-- --id=@q2 create queue other-config:priority=20 " % port

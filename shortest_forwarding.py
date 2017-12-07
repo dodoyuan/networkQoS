@@ -145,11 +145,11 @@ class ShortestForwarding(app_manager.RyuApp):
         '''
             show the information ilp module use
         '''
-        print '-----------require QoS flow info----------------'
+        self.logger.info('-----------require QoS flow info----------------')
         for key, flow in self.flow.items():
-            print key, '--->', flow
-        print 'ip info (src dst)', self.flow_ip
-        print '-----------info end----------------------'
+            self.logger.info("key:%s '--->'flow:%s" % (key, flow))
+            self.logger.info('ip info (src dst): %s' % self.flow_ip) 
+        self.logger.info('-----------info end----------------------')
 
     @set_ev_cls(ofp_event.EventOFPStateChange,
                 [MAIN_DISPATCHER, DEAD_DISPATCHER])
