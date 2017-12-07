@@ -410,7 +410,7 @@ class ShortestForwarding(app_manager.RyuApp):
             if dst_sw:
                 # self.logger.info("src %s dst %s " % (src_sw, dst_sw))
                 path, self.config_flag = self.get_path(src_sw, dst_sw, require_band, weight=self.weight)
-                # self.logger.info("[PATH]%s<-->%s: %s" % (ip_src, ip_dst, path))
+                self.logger.info("[PATH]%s<-->%s: %s" % (ip_src, ip_dst, path))
                 flow_info = (eth_type, ip_src, ip_dst, in_port)
                 # install flow entries to datapath along side the path.
                 self.install_flow(self.datapaths,
