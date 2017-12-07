@@ -50,7 +50,7 @@ def neighbor_tail(node, edges):
     return linked_edges
 
 
-# @exeTime
+@exeTime
 def milp_constrains(nodes, edges, r, p, flow, capacity, src_dst):
     '''
 
