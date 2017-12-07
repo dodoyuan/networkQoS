@@ -14,14 +14,14 @@ MAX_CAPACITY = 281474976710655L  # Max capacity of link
 
 def get_link_capacity(dpid, port, return_matrix_flag):
     link_capacity = defaultdict(lambda: defaultdict(lambda: 10))
-    link_capacity[8][1] = 100
-    link_capacity[8][2] = 100
-    link_capacity[8][3] = 100
-    link_capacity[8][4] = 100
-    link_capacity[1][1] = 100
-    link_capacity[1][2] = 100
-    link_capacity[1][3] = 100
-    link_capacity[1][4] = 100
+    # link_capacity[4][1] = 100
+    # link_capacity[4][2] = 100
+    # link_capacity[4][3] = 100
+    # link_capacity[4][4] = 100
+    # link_capacity[1][1] = 100
+    # link_capacity[1][2] = 100
+    # link_capacity[1][3] = 100
+    # link_capacity[1][4] = 100
     if return_matrix_flag:
         return link_capacity
     else:
@@ -32,7 +32,7 @@ k_paths = 2
 WEIGHT = 'bw'
 
 # predefined requirement band-with of each source IP
-require_band = {"10.0.0.1": 8, "10.0.0.2": 6, "10.0.0.3": 8}
+require_band = {"10.0.0.1": 8, "10.0.0.2": 6, "10.0.0.3": 5}
 
 # predefined priority of each source IP
 priority_weight = {"10.0.0.1": 16, "10.0.0.2": 8, "10.0.0.3": 4}
