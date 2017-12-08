@@ -85,7 +85,7 @@ def ILP_plot():
     plt.plot(x, y2, 'r', marker='s', label="medium QoS level",
              markersize=10)
 
-    plt.plot(x, y3, color='g', marker='H', markersize=10,
+    plt.plot(x, y3, color='g', marker='H', markersize=10,markeredgewidth=1, markerfacecolor="none",
              label="low QoS level")
 
     plt.plot(x, y4, color='b', marker='o', markersize=10,
