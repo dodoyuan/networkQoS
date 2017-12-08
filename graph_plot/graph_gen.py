@@ -9,7 +9,7 @@ import all_data
 
 
 def sender_plot():
-    x = np.arange(1, 61, 1)
+    x = np.arange(0, 60, 1)
     y1 = all_data.sender_throughput.y1
     y2 = all_data.sender_throughput.y2
     y3 = all_data.sender_throughput.y3
@@ -28,4 +28,8 @@ def sender_plot():
     plt.xlabel('Node availability')
     plt.legend(loc='best')
     plt.show()
+
+
+if __name__ == '__main__':
+    sender_plot()
 
