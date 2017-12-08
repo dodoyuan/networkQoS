@@ -91,10 +91,18 @@ def ILP_plot():
     y1_smooth = spline(x, y1, xnew)
     plt.plot(xnew, y1_smooth, 'b', label="high QoS level")
 
-    plt.plot(x, y2, 'r', marker='*', label="medium QoS level",
-             markersize=8)
+    # plt.plot(x, y2, 'r', marker='*', label="medium QoS level",
+    #          markersize=8)
+    y2 = np.array(y2)
+    y2_smooth = spline(x, y2, xnew)
+    plt.plot(xnew, y2_smooth, color='g',
+             label="low QoS level")
 
-    plt.plot(x, y3, color='g', marker='x', markersize=8,
+    # plt.plot(x, y3, color='g', marker='x', markersize=8,
+    #          label="low QoS level")
+    y3 = np.array(y3)
+    y3_smooth = spline(x, y3, xnew)
+    plt.plot(xnew, y3_smooth, color='g',
              label="low QoS level")
 
     # smooth
