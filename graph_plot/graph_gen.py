@@ -12,7 +12,7 @@ from scipy.interpolate import spline
 def sender_plot():
 
     x = [i for i in xrange(31)]
-    x_sm = np.arange(x)
+    x_sm = np.array(x)
     x_smooth = np.linspace(x_sm.min(), x_sm.max(), 200)
 
     y1 = all_data.sender_throughput.y1
