@@ -22,22 +22,22 @@ def sender_plot():
     # y1 = np.array(y1)
     # xnew = np.linspace(x.min(), x.max(), 300)
     # y1_smooth = spline(x, y1, xnew)
-    plt.figure(figsize=(10, 7))
+    plt.figure(figsize=(8, 5))
     plt.plot(x, y1, 'k', marker='s', label="high QoS level", markeredgewidth=1, mec='k',
              markerfacecolor="none", markersize=10)
 
     plt.plot(x, y2, 'r', marker='s', label="medium QoS level",
              markersize=10)
 
-    plt.plot(x, y3, color='g', marker='o', markersize=10, markeredgewidth=1, mec='g',
-             markerfacecolor="none", label="low QoS level")
+    plt.plot(x, y3, color='g', marker='h', markersize=10,
+             label="low QoS level")
 
     plt.plot(x, y4, color='b', marker='o', markersize=10,
              label="best effort")
 
     plt.ylabel('Throughput(Mbps)')
     plt.xlabel('Time(s)')
-    plt.yticks(np.arange(0, 10, 1))
+    plt.yticks(np.arange(0, 11, 1))
     plt.legend(loc='best')
     plt.show()
 
@@ -50,22 +50,22 @@ def CSWP_plot():
     y3 = all_data.CWSP_throughput.y3
     y4 = all_data.CWSP_throughput.y4
 
-    plt.figure(figsize=(10, 7))
+    plt.figure(figsize=(8, 5))
     plt.plot(x, y1, 'k', marker='s', label="high QoS level", markeredgewidth=1, mec='k',
              markerfacecolor="none", markersize=10)
 
     plt.plot(x, y2, 'r', marker='s', label="medium QoS level",
              markersize=10)
 
-    plt.plot(x, y3, color='g', marker='o', markersize=10, markeredgewidth=1,mec='g',
-             markerfacecolor="none",label="low QoS level")
+    plt.plot(x, y3, color='g', marker='h', markersize=10,
+             label="low QoS level")
 
     plt.plot(x, y4, color='b', marker='o', markersize=10,
              label="best effort")
 
     plt.ylabel('Throughput(Mbps)')
     plt.xlabel('Time(s)')
-    plt.yticks(np.arange(0, 10, 1))
+    plt.yticks(np.arange(0, 11, 1))
     plt.legend(loc='best')
     plt.show()
 
