@@ -29,7 +29,7 @@ def sender_plot():
     plt.plot(x, y2, 'r', marker='*', label="medium QoS level",
              markersize=8)
 
-    plt.plot(x, y3, color='g', marker='x', markersize=8, linewidth=4,
+    plt.plot(x, y3, color='g', marker='x', markersize=8,
              label="low QoS level")
 
     plt.plot(x, y4, color='k', marker='o', markersize=8,
