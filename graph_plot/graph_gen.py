@@ -13,7 +13,7 @@ def sender_plot():
     x = np.arange(0, 31, 1)
 
     x_sm = np.array(x)
-    x_smooth = np.linspace(x_sm.min(), x_sm.max(), 200)
+    x_smooth = np.linspace(x_sm.min(), x_sm.max(), 20)
 
     y1 = all_data.sender_throughput.y1
     y2 = all_data.sender_throughput.y2
@@ -22,17 +22,19 @@ def sender_plot():
 
     plt.figure(figsize=(15, 7))
 
-    y1_sm = np.array(y1)
+    # y1_sm = np.array(y1)
     y1_smooth = spline(x, y1, x_smooth)
 
     plt.plot(x_smooth, y1_smooth, 'b', marker='+', label="high QoS level",
              markersize=4)
-    plt.plot(x, y2, 'r', marker='*', label="medium QoS level",
+    y2_smooth = spline(x, y2, x_smooth)
+    plt.plot(x, y2_smooth, 'r', marker='*', label="medium QoS level",
              markersize=4)
-    plt.plot(x, y3, color='g', marker='x', markersize=4,
+    y3_smooth = spline(x, y3, x_smooth)
+    plt.plot(x, y3_smooth, color='g', marker='x', markersize=4,
              label="low QoS level")
-
-    plt.plot(x, y4, color='k', marker='o', markersize=4,
+    y4_smooth = spline(x, y4, x_smooth)
+    plt.plot(x, y4_smooth, color='k', marker='o', markersize=4,
              label="best effort")
 
     plt.ylabel('Throughput(Mbps)')
