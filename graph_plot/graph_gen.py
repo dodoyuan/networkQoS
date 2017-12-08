@@ -9,7 +9,7 @@ import all_data
 
 
 def sender_plot():
-    x = np.arange(0, 60, 1)
+    x = np.arange(0, 61, 1)
     y1 = all_data.sender_throughput.y1
     y2 = all_data.sender_throughput.y2
     y3 = all_data.sender_throughput.y3
