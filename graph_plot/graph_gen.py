@@ -77,49 +77,19 @@ def ILP_plot():
     y2 = all_data.ILP_throughput.y2
     y3 = all_data.ILP_throughput.y3
     y4 = all_data.ILP_throughput.y4
-    # smooth
-    x = np.array(x)
-    xnew = np.linspace(x.min(), x.max(), 300)
-
-
 
     plt.figure(figsize=(15, 7))
-    # plt.plot(x, y1, 'b', marker='+', label="high QoS level",
-    #          markersize=8)
-    # smooth
-    y1 = np.array(y1)
-    # y1_smooth = interpolate.spline(x, y1, xnew)
-    f = interpolate.interp1d(x, y1, kind='cubic')
-    y1_smooth = f(xnew)
-    plt.plot(xnew, y1_smooth, 'b', label="high QoS level")
+    plt.plot(x, y1, 'b', marker='+', label="high QoS level",
+             markersize=12)
 
-    # plt.plot(x, y2, 'r', marker='*', label="medium QoS level",
-    #          markersize=8)
-    y2 = np.array(y2)
-    # y2_smooth = interpolate.spline(x, y2, xnew)
-    f = interpolate.interp1d(x, y2, kind='cubic')
-    y2_smooth = f(xnew)
-    plt.plot(xnew, y2_smooth, color='g',
+    plt.plot(x, y2, 'r', marker='*', label="medium QoS level",
+             markersize=12)
+
+    plt.plot(x, y3, color='g', marker='x', markersize=12,
              label="low QoS level")
 
-    # plt.plot(x, y3, color='g', marker='x', markersize=8,
-    #          label="low QoS level")
-    y3 = np.array(y3)
-    # y3_smooth = interpolate.spline(x, y3, xnew)
-    f = interpolate.interp1d(x, y3, kind='cubic')
-    y3_smooth = f(xnew)
-    plt.plot(xnew, y3_smooth, color='g',
-             label="low QoS level")
-
-    # smooth
-    y4 = np.array(y4)
-    # y4_smooth = interpolate.spline(x, y4, xnew)
-    f = interpolate.interp1d(x, y4, kind='cubic')
-    y4_smooth = f(xnew)
-    # plt.plot(x, y4, color='k', marker='o', markersize=8,
-    #         label="best effort")
-    plt.plot(xnew, y4_smooth, color='k',
-             label="best effort")
+    plt.plot(x, y4, color='k', marker='o', markersize=12,
+            label="best effort")
 
     plt.ylabel('Throughput(Mbps)')
     plt.xlabel('Time(s)')
