@@ -79,14 +79,17 @@ def ILP_plot():
     y4 = all_data.ILP_throughput.y4
     # smooth
     x = np.array(x)
-    y1 = np.array(y1)
     xnew = np.linspace(x.min(), x.max(), 300)
-    y1_smooth = spline(x, y1, xnew)
+
+
 
     plt.figure(figsize=(15, 7))
+    # plt.plot(x, y1, 'b', marker='+', label="high QoS level",
+    #          markersize=8)
     # smooth
-    plt.plot(xnew, y1_smooth, 'b', marker='+', label="high QoS level",
-             markersize=8)
+    y1 = np.array(y1)
+    y1_smooth = spline(x, y1, xnew)
+    plt.plot(xnew, y1_smooth, 'b', label="high QoS level")
 
     plt.plot(x, y2, 'r', marker='*', label="medium QoS level",
              markersize=8)
@@ -97,7 +100,9 @@ def ILP_plot():
     # smooth
     y4 = np.array(y4)
     y4_smooth = spline(x, y4, xnew)
-    plt.plot(xnew, y4_smooth, color='k', marker='o', markersize=8,
+    # plt.plot(x, y4, color='k', marker='o', markersize=8,
+    #         label="best effort")
+    plt.plot(xnew, y4_smooth, color='k',
              label="best effort")
 
     plt.ylabel('Throughput(Mbps)')
