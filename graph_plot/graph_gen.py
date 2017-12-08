@@ -16,14 +16,14 @@ def sender_plot():
     y4 = all_data.sender_throughput.y4
 
     plt.figure(figsize=(15, 7))
-    plt.plot(x, y1, 'b--', marker='+', label="high QoS level")
-    plt.plot(x, y2, 'r--', marker='*', label="medium QoS level")
+    plt.plot(x, y1, 'b--', marker='+', label="high QoS level", linewidth=4)
+    plt.plot(x, y2, 'r--', marker='*', label="medium QoS level", linewidth=4)
     plt.plot(x, y3, color='g',linestyle='--', marker='x',
              label="low QoS level",
-             linewidth=2)
+             linewidth=4)
     plt.plot(x, y4, color='k', linestyle='--', marker='2',
              label="best effort",
-             linewidth=2)
+             linewidth=4)
     plt.ylabel('Throughput(Mbps)')
     plt.xlabel('Time(s)')
     plt.yticks(np.arange(0, 10, 1))
