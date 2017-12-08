@@ -79,13 +79,13 @@ def ILP_plot():
     y4 = all_data.ILP_throughput.y4
 
     plt.figure(figsize=(10, 7))
-    plt.plot(x, y1, 'k', marker='h', label="high QoS level",
+    plt.plot(x, y1, 'k', marker='s', label="high QoS level", markeredgewidth=1, markerfacecolor="none",
              markersize=10)
 
     plt.plot(x, y2, 'r', marker='s', label="medium QoS level",
              markersize=10)
 
-    plt.plot(x, y3, color='g', marker='H', markersize=10,markeredgewidth=1, markerfacecolor="none",
+    plt.plot(x, y3, color='g', marker='o', markersize=10, markeredgewidth=1, markerfacecolor="none",
              label="low QoS level")
 
     plt.plot(x, y4, color='b', marker='o', markersize=10,
