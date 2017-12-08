@@ -85,15 +85,15 @@ def ILP_plot():
     plt.plot(x, y2, 'r', marker='s', label="medium QoS level",
              markersize=10)
 
-    plt.plot(x, y3, color='g', marker='h',
-             markerfacecolor="none", label="low QoS level")
+    plt.plot(x, y3, color='g', marker='h', markersize=10,
+              label="low QoS level")
 
     plt.plot(x, y4, color='b', marker='o', markersize=10,
             label="best effort")
 
     plt.ylabel('Throughput(Mbps)')
     plt.xlabel('Time(s)')
-    plt.yticks(np.arange(0, 10, 1))
+    plt.yticks(np.arange(0, 11, 1))
     plt.legend(loc='best')
     plt.show()
 
