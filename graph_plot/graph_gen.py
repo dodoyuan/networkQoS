@@ -10,15 +10,15 @@ from scipy.interpolate import spline
 
 
 def sender_plot():
-    x = np.arange(0, 31, 1)
 
-    x_sm = np.array(x)
-    x_smooth = np.linspace(x_sm.min(), x_sm.max(), 300)
+    x = [i for i in xrange(31)]
+    x_sm = np.arange(x)
+    x_smooth = np.linspace(x_sm.min(), x_sm.max(), 200)
 
-    y1 = np.array(all_data.sender_throughput.y1)
-    y2 = np.array(all_data.sender_throughput.y2)
-    y3 = np.array(all_data.sender_throughput.y3)
-    y4 = np.array(all_data.sender_throughput.y4)
+    y1 = all_data.sender_throughput.y1
+    y2 = all_data.sender_throughput.y2
+    y3 = all_data.sender_throughput.y3
+    y4 = all_data.sender_throughput.y4
 
     plt.figure(figsize=(15, 7))
 
