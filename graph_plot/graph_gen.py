@@ -79,7 +79,7 @@ def ILP_plot():
     y4 = all_data.ILP_throughput.y4
     # smooth
     x = np.array(x)
-    xnew = np.linspace(x.min(), x.max(), 150)
+    xnew = np.linspace(x.min(), x.max(), 300)
 
 
 
@@ -89,7 +89,7 @@ def ILP_plot():
     # smooth
     y1 = np.array(y1)
     # y1_smooth = interpolate.spline(x, y1, xnew)
-    f = interpolate.interp1d(x, y1, kind='quadratic')
+    f = interpolate.interp1d(x, y1, kind='cubic')
     y1_smooth = f(xnew)
     plt.plot(xnew, y1_smooth, 'b', label="high QoS level")
 
@@ -97,7 +97,7 @@ def ILP_plot():
     #          markersize=8)
     y2 = np.array(y2)
     # y2_smooth = interpolate.spline(x, y2, xnew)
-    f = interpolate.interp1d(x, y2, kind='quadratic')
+    f = interpolate.interp1d(x, y2, kind='cubic')
     y2_smooth = f(xnew)
     plt.plot(xnew, y2_smooth, color='g',
              label="low QoS level")
@@ -106,7 +106,7 @@ def ILP_plot():
     #          label="low QoS level")
     y3 = np.array(y3)
     # y3_smooth = interpolate.spline(x, y3, xnew)
-    f = interpolate.interp1d(x, y3, kind='quadratic')
+    f = interpolate.interp1d(x, y3, kind='cubic')
     y3_smooth = f(xnew)
     plt.plot(xnew, y3_smooth, color='g',
              label="low QoS level")
@@ -114,7 +114,7 @@ def ILP_plot():
     # smooth
     y4 = np.array(y4)
     # y4_smooth = interpolate.spline(x, y4, xnew)
-    f = interpolate.interp1d(x, y4, kind='quadratic')
+    f = interpolate.interp1d(x, y4, kind='cubic')
     y4_smooth = f(xnew)
     # plt.plot(x, y4, color='k', marker='o', markersize=8,
     #         label="best effort")
