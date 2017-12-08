@@ -6,22 +6,33 @@ from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
 import all_data
+from scipy.interpolate import spline
 
 
 def sender_plot():
     x = np.arange(0, 31, 1)
+
+    x_sm = np.array(x)
+    x_smooth = np.linspace(x_sm.min(), x_sm.max(), 200)
+
     y1 = all_data.sender_throughput.y1
     y2 = all_data.sender_throughput.y2
     y3 = all_data.sender_throughput.y3
     y4 = all_data.sender_throughput.y4
 
     plt.figure(figsize=(15, 7))
-    plt.plot(x, y1, 'b', marker='+', label="high QoS level")
-    plt.plot(x, y2, 'r', marker='*', label="medium QoS level")
-    plt.plot(x, y3, color='g', marker='x',
+
+    y1_sm = np.array(y1)
+    y1_smooth = spline(x, y1, x_smooth)
+
+    plt.plot(x_smooth, y1_smooth, 'b', marker='+', label="high QoS level",
+             markersize=4)
+    plt.plot(x, y2, 'r', marker='*', label="medium QoS level",
+             markersize=4)
+    plt.plot(x, y3, color='g', marker='x', markersize=4,
              label="low QoS level")
 
-    plt.plot(x, y4, color='k', marker='2',
+    plt.plot(x, y4, color='k', marker='o', markersize=4,
              label="best effort")
 
     plt.ylabel('Throughput(Mbps)')
