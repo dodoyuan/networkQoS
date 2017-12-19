@@ -23,21 +23,21 @@ def sender_plot():
     # xnew = np.linspace(x.min(), x.max(), 300)
     # y1_smooth = spline(x, y1, xnew)
     plt.figure(figsize=(8, 5))
-    plt.plot(x, y1, 'k', marker='s', label="high priority QoS flow (h1-h5)", markeredgewidth=1, mec='k',
-             markerfacecolor="none", markersize=10, labelsize=15)
+    plt.plot(x, y1, 'k', marker='s', label="HP QoS flow(h1-h5)", markeredgewidth=1, mec='k',
+             markerfacecolor="none", markersize=10)
 
-    plt.plot(x, y2, 'r', marker='s', label="middle priority QoS flow (h2-h6)",
-             markersize=10, labelsize=15)
+    plt.plot(x, y2, 'r', marker='s', label="MP QoS flow(h2-h6)",
+             markersize=10)
 
     plt.plot(x, y3, color='g', marker='h', markersize=10,
-             label="low priority QoS flow (h3-h7)", labelsize=15)
+             label="LP QoS flow(h3-h7)")
 
     plt.plot(x, y4, color='b', marker='o', markersize=10,
-             label="best effort flow (h4-h8)", labelsize=15)
+             label="BE flow(h4-h8)")
 
     plt.ylabel('Throughput(Mbps)')
     plt.xlabel('Time(s)')
-    plt.yticks(np.arange(0, 15, 1))
+    plt.yticks(np.arange(0, 11, 1))
     plt.legend(loc='upper left')
     plt.show()
 
