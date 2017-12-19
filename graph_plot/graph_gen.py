@@ -37,7 +37,7 @@ def sender_plot():
 
     plt.ylabel('Throughput(Mbps)')
     plt.xlabel('Time(s)')
-    plt.yticks(np.arange(0, 11, 1))
+    plt.yticks(np.arange(0, 15, 1))
     plt.legend(loc='upper left')
     plt.show()
 
@@ -65,7 +65,7 @@ def CSWP_plot():
 
     plt.ylabel('Throughput(Mbps)')
     plt.xlabel('Time(s)')
-    plt.yticks(np.arange(0, 11, 1))
+    plt.yticks(np.arange(0, 15, 1))
     plt.legend(loc='upper left')
     plt.show()
 
@@ -93,7 +93,7 @@ def ILP_plot():
 
     plt.ylabel('Throughput(Mbps)')
     plt.xlabel('Time(s)')
-    plt.yticks(np.arange(0, 11, 1))
+    plt.yticks(np.arange(0, 15, 1))
     plt.legend(loc='upper left')
     plt.show()
 
