@@ -23,17 +23,17 @@ def sender_plot():
     # xnew = np.linspace(x.min(), x.max(), 300)
     # y1_smooth = spline(x, y1, xnew)
     plt.figure(figsize=(8, 5))
-    plt.plot(x, y1, 'k', marker='s', label="high QoS level", markeredgewidth=1, mec='k',
+    plt.plot(x, y1, 'k', marker='s', label="high priority QoS flow (h1-h5)", markeredgewidth=1, mec='k',
              markerfacecolor="none", markersize=10)
 
-    plt.plot(x, y2, 'r', marker='s', label="medium QoS level",
+    plt.plot(x, y2, 'r', marker='s', label="middle priority QoS flow (h2-h6)",
              markersize=10)
 
     plt.plot(x, y3, color='g', marker='h', markersize=10,
-             label="low QoS level")
+             label="low priority QoS flow (h3-h7)")
 
     plt.plot(x, y4, color='b', marker='o', markersize=10,
-             label="best effort")
+             label="best effort flow (h4-h8)")
 
     plt.ylabel('Throughput(Mbps)')
     plt.xlabel('Time(s)')
@@ -51,17 +51,17 @@ def CSWP_plot():
     y4 = all_data.CWSP_throughput.y4
 
     plt.figure(figsize=(8, 5))
-    plt.plot(x, y1, 'k', marker='s', label="high QoS level", markeredgewidth=1, mec='k',
+    plt.plot(x, y1, 'k', marker='s', label="high priority QoS flow (h1-h5)", markeredgewidth=1, mec='k',
              markerfacecolor="none", markersize=10)
 
-    plt.plot(x, y2, 'r', marker='s', label="medium QoS level",
+    plt.plot(x, y2, 'r', marker='s', label="middle priority QoS flow (h2-h6)",
              markersize=10)
 
     plt.plot(x, y3, color='g', marker='h', markersize=10,
-             label="low QoS level")
+             label="low priority QoS flow (h3-h7)")
 
     plt.plot(x, y4, color='b', marker='o', markersize=10,
-             label="best effort")
+             label="best effort flow (h4-h8)")
 
     plt.ylabel('Throughput(Mbps)')
     plt.xlabel('Time(s)')
@@ -79,17 +79,17 @@ def ILP_plot():
     y4 = all_data.ILP_throughput.y4
 
     plt.figure(figsize=(8, 5))
-    plt.plot(x, y1, 'k', marker='s', label="high QoS level", markeredgewidth=1, mec='k',
+    plt.plot(x, y1, 'k', marker='s', label="high priority QoS flow (h1-h5)", markeredgewidth=1, mec='k',
              markerfacecolor="none", markersize=10)
 
-    plt.plot(x, y2, 'r', marker='s', label="medium QoS level",
+    plt.plot(x, y2, 'r', marker='s', label="middle priority QoS flow (h2-h6)",
              markersize=10)
 
     plt.plot(x, y3, color='g', marker='h', markersize=10,
-              label="low QoS level")
+              label="low priority QoS flow (h3-h7)")
 
     plt.plot(x, y4, color='b', marker='o', markersize=10,
-            label="best effort")
+            label="best effort flow (h4-h8)")
 
     plt.ylabel('Throughput(Mbps)')
     plt.xlabel('Time(s)')
