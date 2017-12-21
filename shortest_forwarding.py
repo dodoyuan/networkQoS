@@ -418,7 +418,7 @@ class ShortestForwarding(app_manager.RyuApp):
                                   self.awareness.access_table, path,
                                   flow_info, msg.buffer_id, msg.data, 1, set_queue)
 
-        self._ilp_process()
+        # self._ilp_process()
         return
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
