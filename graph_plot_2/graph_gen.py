@@ -206,7 +206,7 @@ def total_throughput():
     plt.ylabel('total throughput(Mbps)')
     plt.xlabel('Time(s)')
     plt.yticks(np.arange(0, 20, 1))
-    plt.legend(loc='upper left')
+    plt.legend(loc='lower right')
     plt.show()
 
 
