@@ -9,6 +9,7 @@ from matplotlib import pyplot as plt
 # ---------------------4*4 mesh 5*5 mesh 6*6 mesh 20 random  30 random
 ILP_packet_loss = [2, 0.28, 15, 59]
 CSWP_packet_loss = [17, 0.18, 19, 0.15]
+SP_packet_loss = [30, 25, 40, 61]
 
 n_groups = 4
 
@@ -21,15 +22,20 @@ opacity = 0.5  # 透明度，0.5时候稍微好点
 rects1 = plt.bar(index+0.1, ILP_packet_loss, bar_width,
                  alpha=opacity,
                  color='grey',hatch = '//',
-                 label='packet loss rate with RR')
+                 label='proposed scheme')
 
-rects2 = plt.bar(index+0.1+ bar_width, CSWP_packet_loss, bar_width,
+rects2 = plt.bar(index+0.1 + bar_width, CSWP_packet_loss, bar_width,
                  alpha=opacity,
                  color='lightgrey',hatch = '\\',
-                 label='packet loss rate without RR')
+                 label='ECMP')
+
+rects3 = plt.bar(index+0.1 + 2 * bar_width, SP_packet_loss, bar_width,
+                 alpha=opacity,
+                 color='lightgreen',hatch = 'x',
+                 label='shortest path')
 
 plt.xlabel('flow topology')
-plt.ylabel('path length')
+plt.ylabel('packet loss rate %')
 #plt.title('Scores by person')
 plt.yticks([0,10,20,30,40,50,60])
 plt.xticks(index + 2*bar_width, ('flow1(h1-h5)', 'flow2(h2-h6)', 'flow3(h3-h7)', 'flow4(h4-h8)'))

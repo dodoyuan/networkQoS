@@ -198,7 +198,7 @@ def total_throughput():
              markersize=10)
 
     plt.plot(x, yilp, color='g', marker='h', markersize=10,
-             label="QoS aware")
+             label="proposed scheme")
 
     # plt.plot(x, y4, color='b', marker='o', markersize=10,
     #          label="BE flow(h4-h8)")
