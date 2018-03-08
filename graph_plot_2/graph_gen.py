@@ -161,9 +161,58 @@ def SP_plot():
     plt.show()
 
 
+def total_throughput():
+    '''
+      ILP model graph only
+    '''
+
+    x = np.arange(0, 31, 1)
+
+    y1 = all_data.SP_throughput.y1
+    y2 = all_data.SP_throughput.y2
+    y3 = all_data.SP_throughput.y3
+    ysp = []
+    for i in xrange(len(y1)):
+        ysp.append(y1[i] + y2[i] + y3[i])
+
+    y1 = all_data.ILP_throughput.y1
+    y2 = all_data.ILP_throughput.y2
+    y3 = all_data.ILP_throughput.y3
+    yilp = []
+    for i in xrange(len(y1)):
+        yilp.append(y1[i] + y2[i] + y3[i])
+
+    y1 = all_data.CWSP_throughput.y1
+    y2 = all_data.CWSP_throughput.y2
+    y3 = all_data.CWSP_throughput.y3
+    yecmp = []
+    for i in xrange(len(y1)):
+        yecmp.append(y1[i] + y2[i] + y3[i])
+
+    plt.figure(figsize=(8, 5))
+
+    plt.plot(x, ysp, 'k', marker='s', label="shortest path", markeredgewidth=1, mec='k',
+             markerfacecolor="none", markersize=10)
+
+    plt.plot(x, yecmp, 'r', marker='o', label="ECMP",
+             markersize=10)
+
+    plt.plot(x, yilp, color='g', marker='h', markersize=10,
+             label="QoS aware")
+
+    # plt.plot(x, y4, color='b', marker='o', markersize=10,
+    #          label="BE flow(h4-h8)")
+
+    plt.ylabel('total throughput(Mbps)')
+    plt.xlabel('Time(s)')
+    plt.yticks(np.arange(0, 20, 1))
+    plt.legend(loc='upper left')
+    plt.show()
+
+
 if __name__ == '__main__':
     sender_plot()
     # CSWP_plot()
     # ILP_plot()
-    SP_plot()
+    total_throughput()
 
