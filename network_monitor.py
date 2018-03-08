@@ -140,19 +140,20 @@ class NetworkMonitor(app_manager.RyuApp):
         #             reconf_flag = 0
         #             return path, reconf_flag
         #         bw_guaranteed_paths = path
-        for path in paths:
-            # self.logger.info("fun get bw guaranteed path:%s" % path)
-            min_bw = setting.MAX_CAPACITY
-            min_bw = self.get_min_bw_of_links(path, min_bw)
-            if min_bw > max_bw_of_paths:
-                max_bw_of_paths = min_bw
-                bw_guaranteed_paths = path
-        if max_bw_of_paths > require_band:
-            reconf_flag = 0
-            return bw_guaranteed_paths, reconf_flag
-        else:
-            return bw_guaranteed_paths, reconf_flag
-        # return bw_guaranteed_paths, 0
+          # -----------------useful------------------------
+        # for path in paths:
+        #     # self.logger.info("fun get bw guaranteed path:%s" % path)
+        #     min_bw = setting.MAX_CAPACITY
+        #     min_bw = self.get_min_bw_of_links(path, min_bw)
+        #     if min_bw > max_bw_of_paths:
+        #         max_bw_of_paths = min_bw
+        #         bw_guaranteed_paths = path
+        # if max_bw_of_paths > require_band:
+        #     reconf_flag = 0
+        #     return bw_guaranteed_paths, reconf_flag
+        # else:
+        #     return bw_guaranteed_paths, reconf_flag
+        return bw_guaranteed_paths, 0
 
     def create_bw_graph(self, bw_dict):
         """
