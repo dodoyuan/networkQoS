@@ -129,40 +129,34 @@ def ILP_plot():
     plt.legend(loc='upper left')
     plt.show()
 
-def ILP_SP_ECMP():
+def SP_plot():
+    '''
+      ILP model graph only
+    '''
+
     x = np.arange(0, 31, 1)
 
-    y1 = all_data.ILP_throughput.y1
-    y2 = all_data.ILP_throughput.y2
-    y3 = all_data.ILP_throughput.y3
-    # y4 = all_data.ILP_throughput.y4
-    yilp,yecmp = [], []
-    for i in xrange(len(y1)):
-        yilp.append(y1[i]+y2[i]+y3[i])
-
-    y1 = all_data.CWSP_throughput.y1
-    y2 = all_data.CWSP_throughput.y2
-    y3 = all_data.CWSP_throughput.y3
-    for i in xrange(len(y1)):
-        yecmp.append(y1[i]+y2[i]+y3[i])
+    y1 = all_data.SP_throughput.y1
+    y2 = all_data.SP_throughput.y2
+    y3 = all_data.SP_throughput.y3
 
     plt.figure(figsize=(8, 5))
 
-    plt.plot(x, yilp, 'k', marker='s', label="flow(h1-h5) priority 3", markeredgewidth=1, mec='k',
+    plt.plot(x, y1, 'k', marker='s', label="flow(h1-h5) priority 3", markeredgewidth=1, mec='k',
              markerfacecolor="none", markersize=10)
 
-    plt.plot(x, yecmp, 'r', marker='o', label="flow(h2-h6) priority 2",
+    plt.plot(x, y2, 'r', marker='o', label="flow(h2-h6) priority 2",
              markersize=10)
 
-    # plt.plot(x, y3, color='g', marker='h', markersize=10,
-    #          label="flow(h3-h7) priority 1")
+    plt.plot(x, y3, color='g', marker='h', markersize=10,
+             label="flow(h3-h7) priority 1")
 
     # plt.plot(x, y4, color='b', marker='o', markersize=10,
     #          label="BE flow(h4-h8)")
 
-    plt.ylabel('Total Throughput(Mbps)')
+    plt.ylabel('Throughput(Mbps)')
     plt.xlabel('Time(s)')
-    plt.yticks(np.arange(0, 22, 1))
+    plt.yticks(np.arange(0, 12, 1))
     plt.legend(loc='upper left')
     plt.show()
 
@@ -171,5 +165,5 @@ if __name__ == '__main__':
     sender_plot()
     # CSWP_plot()
     # ILP_plot()
-    ILP_SP_ECMP()
+    SP_plot()
 

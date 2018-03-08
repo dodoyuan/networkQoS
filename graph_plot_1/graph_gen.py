@@ -109,8 +109,37 @@ def ILP_plot():
     plt.legend(loc='upper left')
     plt.show()
 
+def SP_plot():
+
+    x = np.arange(0, 31, 1)
+
+    y1 = all_data.SP_throughput.y1
+    y2 = all_data.SP_throughput.y2
+    y3 = all_data.SP_throughput.y3
+    y4 = all_data.SP_throughput.y4
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(x, y1, 'k', marker='s', label="flow(h1-h5) priority 4", markeredgewidth=1, mec='k',
+             markerfacecolor="none", markersize=10)
+
+    plt.plot(x, y2, 'r', marker='s', label="flow(h2-h6) priority 3",
+             markersize=10)
+
+    plt.plot(x, y3, color='g', marker='h', markersize=10,
+             label="flow(h3-h7) priority 2")
+
+    plt.plot(x, y4, color='b', marker='o', markersize=10,
+             label="flow(h4-h8) priority 1")
+
+    plt.ylabel('Throughput(Mbps)')
+    plt.xlabel('Time(s)')
+    plt.yticks(np.arange(0, 11, 1))
+    plt.legend(loc='upper left')
+    plt.show()
+
 if __name__ == '__main__':
     sender_plot()
-    CSWP_plot()
-    ILP_plot()
+    # CSWP_plot()
+    # ILP_plot()
+    SP_plot()
 
