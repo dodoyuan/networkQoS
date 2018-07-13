@@ -131,7 +131,7 @@ def ILP_plot():
 
 def SP_plot():
     '''
-      ILP model graph only
+      SP  graph only
     '''
 
     x = np.arange(0, 31, 1)
@@ -163,7 +163,7 @@ def SP_plot():
 
 def total_throughput():
     '''
-      ILP model graph only
+      compare the total throughput the the three method.(ECMP, SP, proposed)
     '''
 
     x = np.arange(0, 31, 1)

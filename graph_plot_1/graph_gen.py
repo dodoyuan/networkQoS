@@ -38,13 +38,13 @@ def sender_plot():
     plt.plot(x, y1, 'k', marker='s', label="flow(h1-h5) priority 4", markeredgewidth=1, mec='k',
              markerfacecolor="none", markersize=10)
 
-    plt.plot(x, y2, 'r', marker='s', label="flow(h2-h6) priority 3",
+    plt.plot(x, y2, 'r', marker='t', label="flow(h2-h6) priority 3",
              markersize=10)
 
     plt.plot(x, y3, color='g', marker='h', markersize=10,
              label="flow(h3-h7) priority 2")
 
-    plt.plot(x, y4, color='b', marker='o', markersize=10,
+    plt.plot(x, y4, color='b', marker='o', markersize=10, markerfacecolor="none",
              label="flow(h4-h8) priority 1")
 
     plt.ylabel('Throughput(Mbps)')
@@ -66,13 +66,13 @@ def CSWP_plot():
     plt.plot(x, y1, 'k', marker='s', label="flow(h1-h5) priority 4", markeredgewidth=1, mec='k',
              markerfacecolor="none", markersize=10)
 
-    plt.plot(x, y2, 'r', marker='s', label="flow(h2-h6) priority 3",
+    plt.plot(x, y2, 'r', marker='t', label="flow(h2-h6) priority 3",
              markersize=10)
 
     plt.plot(x, y3, color='g', marker='h', markersize=10,
              label="flow(h3-h7) priority 2")
 
-    plt.plot(x, y4, color='b', marker='o', markersize=10,
+    plt.plot(x, y4, color='b', marker='o', markersize=10, markerfacecolor="none",
              label="flow(h4-h8) priority 1")
 
     plt.ylabel('Throughput(Mbps)')
@@ -94,13 +94,13 @@ def ILP_plot():
     plt.plot(x, y1, 'k', marker='s', label="flow(h1-h5) priority 4", markeredgewidth=1, mec='k',
              markerfacecolor="none", markersize=10)
 
-    plt.plot(x, y2, 'r', marker='s', label="flow(h2-h6) priority 3",
+    plt.plot(x, y2, 'r', marker='t', label="flow(h2-h6) priority 3",
              markersize=10)
 
     plt.plot(x, y3, color='g', marker='h', markersize=10,
              label="flow(h3-h7) priority 2")
 
-    plt.plot(x, y4, color='b', marker='o', markersize=10,
+    plt.plot(x, y4, color='b', marker='o', markersize=10, markerfacecolor="none",
              label="flow(h4-h8) priority 1")
 
     plt.ylabel('Throughput(Mbps)')
@@ -122,13 +122,13 @@ def SP_plot():
     plt.plot(x, y1, 'k', marker='s', label="flow(h1-h5) priority 4", markeredgewidth=1, mec='k',
              markerfacecolor="none", markersize=10)
 
-    plt.plot(x, y2, 'r', marker='s', label="flow(h2-h6) priority 3",
+    plt.plot(x, y2, 'r', marker='t', label="flow(h2-h6) priority 3",
              markersize=10)
 
     plt.plot(x, y3, color='g', marker='h', markersize=10,
              label="flow(h3-h7) priority 2")
 
-    plt.plot(x, y4, color='b', marker='o', markersize=10,
+    plt.plot(x, y4, color='b', marker='o', markersize=10, markerfacecolor="none",
              label="flow(h4-h8) priority 1")
 
     plt.ylabel('Throughput(Mbps)')
