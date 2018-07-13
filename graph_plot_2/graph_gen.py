@@ -35,7 +35,7 @@ def sender_plot():
     plt.plot(x, y1, 'k', marker='s', label="flow(h1-h5) priority 3", markeredgewidth=1, mec='k',
              markerfacecolor="none", markersize=10)
 
-    plt.plot(x, y2, 'r', marker='s', label="flow(h2-h6) priority 2",
+    plt.plot(x, y2, 'r', marker='^', label="flow(h2-h6) priority 2",
              markersize=10)
 
     plt.plot(x, y3, color='g', marker='h', markersize=10,
@@ -114,7 +114,7 @@ def ILP_plot():
     plt.plot(x, y1, 'k', marker='s', label="flow(h1-h5) priority 3", markeredgewidth=1, mec='k',
              markerfacecolor="none", markersize=10)
 
-    plt.plot(x, y2, 'r', marker='s', label="flow(h2-h6) priority 2",
+    plt.plot(x, y2, 'r', marker='^', label="flow(h2-h6) priority 2",
              markersize=10)
 
     plt.plot(x, y3, color='g', marker='h', markersize=10,
@@ -197,7 +197,7 @@ def total_throughput():
     plt.plot(x, yecmp, 'r', marker='o', label="ECMP",
              markersize=10)
 
-    plt.plot(x, yilp, color='g', marker='h', markersize=10,
+    plt.plot(x, yilp, color='g', marker='^', markersize=10,
              label="proposed scheme")
 
     # plt.plot(x, y4, color='b', marker='o', markersize=10,

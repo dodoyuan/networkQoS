@@ -38,7 +38,7 @@ def sender_plot():
     plt.plot(x, y1, 'k', marker='s', label="flow(h1-h5) priority 4", markeredgewidth=1, mec='k',
              markerfacecolor="none", markersize=10)
 
-    plt.plot(x, y2, 'r', marker='t', label="flow(h2-h6) priority 3",
+    plt.plot(x, y2, 'r', marker='^', label="flow(h2-h6) priority 3",
              markersize=10)
 
     plt.plot(x, y3, color='g', marker='h', markersize=10,
@@ -66,7 +66,7 @@ def CSWP_plot():
     plt.plot(x, y1, 'k', marker='s', label="flow(h1-h5) priority 4", markeredgewidth=1, mec='k',
              markerfacecolor="none", markersize=10)
 
-    plt.plot(x, y2, 'r', marker='t', label="flow(h2-h6) priority 3",
+    plt.plot(x, y2, 'r', marker='^', label="flow(h2-h6) priority 3",
              markersize=10)
 
     plt.plot(x, y3, color='g', marker='h', markersize=10,
@@ -94,7 +94,7 @@ def ILP_plot():
     plt.plot(x, y1, 'k', marker='s', label="flow(h1-h5) priority 4", markeredgewidth=1, mec='k',
              markerfacecolor="none", markersize=10)
 
-    plt.plot(x, y2, 'r', marker='t', label="flow(h2-h6) priority 3",
+    plt.plot(x, y2, 'r', marker='^', label="flow(h2-h6) priority 3",
              markersize=10)
 
     plt.plot(x, y3, color='g', marker='h', markersize=10,
@@ -122,7 +122,7 @@ def SP_plot():
     plt.plot(x, y1, 'k', marker='s', label="flow(h1-h5) priority 4", markeredgewidth=1, mec='k',
              markerfacecolor="none", markersize=10)
 
-    plt.plot(x, y2, 'r', marker='t', label="flow(h2-h6) priority 3",
+    plt.plot(x, y2, 'r', marker='^', label="flow(h2-h6) priority 3",
              markersize=10)
 
     plt.plot(x, y3, color='g', marker='h', markersize=10,
